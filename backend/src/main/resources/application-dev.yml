@@ -1,0 +1,9 @@
+# Chỉ dùng cục bộ với docker-compose.yml ở thư mục gốc.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/soudan
+    username: soudan
+    password: soudan
+  mail:
+    host: localhost
+    port: 1025

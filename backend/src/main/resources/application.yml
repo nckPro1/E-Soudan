@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: soudan
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+app:
+  timezone: Asia/Ho_Chi_Minh
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
