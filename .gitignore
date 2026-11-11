@@ -1,0 +1,28 @@
+# Bí mật và môi trường
+.env
+*.pem
+
+# Backend (Gradle)
+backend/.gradle/
+backend/build/
+backend/out/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+!.vscode/extensions.json
+
+# Hệ điều hành
+.DS_Store
+Thumbs.db
+
+# File nộp khi chạy cục bộ
+/storage/

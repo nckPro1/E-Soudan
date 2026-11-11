@@ -1,0 +1,19 @@
+# Hạ tầng chạy cục bộ: PostgreSQL và MailHog (xem mail thử tại http://localhost:8025).
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: soudan
+      POSTGRES_USER: soudan
+      POSTGRES_PASSWORD: soudan
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+volumes:
+  pgdata:
