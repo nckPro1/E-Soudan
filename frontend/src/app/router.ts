@@ -9,14 +9,21 @@ import { chatRoutes } from '../features/chat/routes'
 import { notificationRoutes } from '../features/notification/routes'
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', name: 'home', component: () => import('./HomeView.vue') },
   ...authRoutes,
-  ...userRoutes,
-  ...teamRoutes,
-  ...taskRoutes,
-  ...reportRoutes,
-  ...chatRoutes,
-  ...notificationRoutes,
+  {
+    // Mọi trang sau đăng nhập nằm trong khung bố cục chung
+    path: '/',
+    component: () => import('../shared/components/AppLayout.vue'),
+    children: [
+      { path: '', name: 'home', component: () => import('./HomeView.vue') },
+      ...userRoutes,
+      ...teamRoutes,
+      ...taskRoutes,
+      ...reportRoutes,
+      ...chatRoutes,
+      ...notificationRoutes,
+    ],
+  },
 ]
 
 /** Tách thành hàm để test dùng history trong bộ nhớ. */

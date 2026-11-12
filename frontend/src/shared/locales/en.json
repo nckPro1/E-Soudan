@@ -39,6 +39,59 @@
     "CURRENT_PASSWORD_INCORRECT": "Current password is incorrect.",
     "VALIDATION_ERROR": "Please check the entered information.",
     "NETWORK_ERROR": "Cannot reach the server. Check your connection and try again.",
-    "UNKNOWN": "Something went wrong. Please try again."
+    "UNKNOWN": "Something went wrong. Please try again.",
+    "EMAIL_ALREADY_EXISTS": "This email is already in use.",
+    "VERSION_CONFLICT": "This account was changed by someone else. Close and reopen it, then try again.",
+    "LAST_ADMIN_PROTECTED": "The system must keep at least one active Admin.",
+    "FORBIDDEN": "You do not have permission to do this.",
+    "NOT_FOUND": "The account was not found."
+  },
+  "nav": {
+    "label": "Main navigation",
+    "home": "Home",
+    "users": "Accounts"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "prev": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}"
+  },
+  "users": {
+    "title": "Account management",
+    "create": "Create account",
+    "createTitle": "Create account",
+    "editTitle": "Edit account",
+    "temporaryPassword": "Temporary password",
+    "temporaryPasswordHint": "At least 8 characters. The user must change it on first sign-in.",
+    "fullName": "Full name",
+    "position": "Position",
+    "role": "Role",
+    "status": "Status",
+    "actions": "Actions",
+    "searchPlaceholder": "Search by name, email or position",
+    "allRoles": "All roles",
+    "allStatuses": "All statuses",
+    "empty": "No accounts found.",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "lockTitle": "Lock account",
+    "unlockTitle": "Unlock account",
+    "lockConfirm": "Lock {name}? They will be signed out and unable to sign in.",
+    "unlockConfirm": "Unlock {name}?",
+    "adminRoleFixed": "The role of an Admin account cannot be changed here.",
+    "roles": {
+      "ADMIN": "Admin",
+      "MANAGER": "Manager",
+      "USER": "Member"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "LOCKED": "Locked"
+    }
   }
 }

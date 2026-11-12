@@ -39,6 +39,59 @@
     "CURRENT_PASSWORD_INCORRECT": "現在のパスワードが正しくありません。",
     "VALIDATION_ERROR": "入力内容を確認してください。",
     "NETWORK_ERROR": "サーバーに接続できません。接続を確認して、もう一度お試しください。",
-    "UNKNOWN": "問題が発生しました。もう一度お試しください。"
+    "UNKNOWN": "問題が発生しました。もう一度お試しください。",
+    "EMAIL_ALREADY_EXISTS": "このメールアドレスは既に使用されています。",
+    "VERSION_CONFLICT": "他の人がこのアカウントを変更しました。閉じて開き直してください。",
+    "LAST_ADMIN_PROTECTED": "有効な管理者を最低1人残す必要があります。",
+    "FORBIDDEN": "この操作を行う権限がありません。",
+    "NOT_FOUND": "アカウントが見つかりません。"
+  },
+  "nav": {
+    "label": "メインナビゲーション",
+    "home": "ホーム",
+    "users": "アカウント"
+  },
+  "common": {
+    "cancel": "キャンセル",
+    "save": "保存",
+    "edit": "編集",
+    "confirm": "確認",
+    "loading": "読み込み中...",
+    "prev": "前へ",
+    "next": "次へ",
+    "pageOf": "{page} / {total} ページ"
+  },
+  "users": {
+    "title": "アカウント管理",
+    "create": "アカウント作成",
+    "createTitle": "アカウント作成",
+    "editTitle": "アカウント編集",
+    "temporaryPassword": "仮パスワード",
+    "temporaryPasswordHint": "8文字以上。初回ログイン時に変更が必要です。",
+    "fullName": "氏名",
+    "position": "役職",
+    "role": "権限",
+    "status": "状態",
+    "actions": "操作",
+    "searchPlaceholder": "氏名・メール・役職で検索",
+    "allRoles": "すべての権限",
+    "allStatuses": "すべての状態",
+    "empty": "アカウントが見つかりません。",
+    "lock": "ロック",
+    "unlock": "ロック解除",
+    "lockTitle": "アカウントをロック",
+    "unlockTitle": "アカウントのロック解除",
+    "lockConfirm": "{name}さんをロックしますか？ログアウトされ、ログインできなくなります。",
+    "unlockConfirm": "{name}さんのロックを解除しますか？",
+    "adminRoleFixed": "管理者アカウントの権限はここでは変更できません。",
+    "roles": {
+      "ADMIN": "管理者",
+      "MANAGER": "マネージャー",
+      "USER": "メンバー"
+    },
+    "statuses": {
+      "ACTIVE": "有効",
+      "LOCKED": "ロック中"
+    }
   }
 }

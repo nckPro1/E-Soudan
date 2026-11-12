@@ -39,6 +39,59 @@
     "CURRENT_PASSWORD_INCORRECT": "Mật khẩu hiện tại không đúng.",
     "VALIDATION_ERROR": "Vui lòng kiểm tra lại thông tin đã nhập.",
     "NETWORK_ERROR": "Không kết nối được máy chủ. Kiểm tra mạng và thử lại.",
-    "UNKNOWN": "Đã xảy ra lỗi. Vui lòng thử lại."
+    "UNKNOWN": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "EMAIL_ALREADY_EXISTS": "Email này đã được sử dụng.",
+    "VERSION_CONFLICT": "Tài khoản vừa được người khác thay đổi. Hãy đóng, mở lại rồi thử lại.",
+    "LAST_ADMIN_PROTECTED": "Hệ thống phải còn ít nhất một Admin đang hoạt động.",
+    "FORBIDDEN": "Bạn không có quyền thực hiện thao tác này.",
+    "NOT_FOUND": "Không tìm thấy tài khoản."
+  },
+  "nav": {
+    "label": "Điều hướng chính",
+    "home": "Trang chủ",
+    "users": "Tài khoản"
+  },
+  "common": {
+    "cancel": "Huỷ",
+    "save": "Lưu",
+    "edit": "Sửa",
+    "confirm": "Xác nhận",
+    "loading": "Đang tải...",
+    "prev": "Trước",
+    "next": "Sau",
+    "pageOf": "Trang {page} / {total}"
+  },
+  "users": {
+    "title": "Quản lý tài khoản",
+    "create": "Tạo tài khoản",
+    "createTitle": "Tạo tài khoản",
+    "editTitle": "Sửa tài khoản",
+    "temporaryPassword": "Mật khẩu tạm",
+    "temporaryPasswordHint": "Tối thiểu 8 ký tự. Người dùng phải đổi khi đăng nhập lần đầu.",
+    "fullName": "Họ tên",
+    "position": "Vị trí",
+    "role": "Vai trò",
+    "status": "Trạng thái",
+    "actions": "Thao tác",
+    "searchPlaceholder": "Tìm theo tên, email hoặc vị trí",
+    "allRoles": "Mọi vai trò",
+    "allStatuses": "Mọi trạng thái",
+    "empty": "Không có tài khoản nào.",
+    "lock": "Khoá",
+    "unlock": "Mở khoá",
+    "lockTitle": "Khoá tài khoản",
+    "unlockTitle": "Mở khoá tài khoản",
+    "lockConfirm": "Khoá {name}? Người này sẽ bị đăng xuất và không đăng nhập được.",
+    "unlockConfirm": "Mở khoá {name}?",
+    "adminRoleFixed": "Không đổi được vai trò của tài khoản Admin tại đây.",
+    "roles": {
+      "ADMIN": "Admin",
+      "MANAGER": "Quản lý",
+      "USER": "Thành viên"
+    },
+    "statuses": {
+      "ACTIVE": "Hoạt động",
+      "LOCKED": "Đã khoá"
+    }
   }
 }
