@@ -44,12 +44,18 @@
     "VERSION_CONFLICT": "他の人がこのアカウントを変更しました。閉じて開き直してください。",
     "LAST_ADMIN_PROTECTED": "有効な管理者を最低1人残す必要があります。",
     "FORBIDDEN": "この操作を行う権限がありません。",
-    "NOT_FOUND": "アカウントが見つかりません。"
+    "NOT_FOUND": "アカウントが見つかりません。",
+    "TEAM_NAME_ALREADY_EXISTS": "この名前は有効なチームで既に使用されています。",
+    "TEAM_ARCHIVED": "このチームはアーカイブ済みのため変更できません。",
+    "LAST_LEADER_PROTECTED": "チームにはリーダーが最低1人必要です。",
+    "ALREADY_TEAM_MEMBER": "この人は既にチームにいます。",
+    "INVALID_TEAM_MEMBER": "このアカウントはその役割に就けません（リーダーとメンバーは一般メンバー、オブザーバーはマネージャーで、有効なアカウントが必要です）。"
   },
   "nav": {
     "label": "メインナビゲーション",
     "home": "ホーム",
-    "users": "アカウント"
+    "users": "アカウント",
+    "teams": "チーム"
   },
   "common": {
     "cancel": "キャンセル",
@@ -92,6 +98,39 @@
     "statuses": {
       "ACTIVE": "有効",
       "LOCKED": "ロック中"
+    }
+  },
+  "team": {
+    "title": "チーム",
+    "create": "チーム作成",
+    "createTitle": "チーム作成",
+    "editTitle": "チーム編集",
+    "name": "チーム名",
+    "description": "説明",
+    "memberCount": "メンバー数",
+    "members": "メンバー",
+    "teamRole": "チーム内の役割",
+    "searchPlaceholder": "チーム名で検索",
+    "empty": "チームが見つかりません。",
+    "addMember": "メンバー追加",
+    "remove": "削除",
+    "removeTitle": "メンバーを削除",
+    "removeConfirm": "{name}さんをこのチームから削除しますか？",
+    "archive": "チームをアーカイブ",
+    "archiveConfirm": "{name}をアーカイブしますか？アーカイブしたチームは変更できなくなります。",
+    "archivedNotice": "このチームはアーカイブ済みのため、変更できません。",
+    "leaderRequired": "リーダーを1人以上選択してください。",
+    "pickPerson": "担当者",
+    "pickerSearch": "検索...",
+    "pickerEmpty": "選択できる人がいません。",
+    "roles": {
+      "LEADER": "リーダー",
+      "MEMBER": "メンバー",
+      "OBSERVER": "オブザーバー（マネージャー）"
+    },
+    "statuses": {
+      "ACTIVE": "有効",
+      "ARCHIVED": "アーカイブ済み"
     }
   }
 }

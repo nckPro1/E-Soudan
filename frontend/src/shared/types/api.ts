@@ -31,3 +31,12 @@ export class ApiError extends Error {
     this.details = details
   }
 }
+
+/** Một trang kết quả (page đếm từ 0), khớp PageResponse của backend. */
+export interface PageResult<T> {
+  items: T[]
+  page: number
+  size: number
+  totalItems: number
+  totalPages: number
+}

@@ -44,12 +44,18 @@
     "VERSION_CONFLICT": "This account was changed by someone else. Close and reopen it, then try again.",
     "LAST_ADMIN_PROTECTED": "The system must keep at least one active Admin.",
     "FORBIDDEN": "You do not have permission to do this.",
-    "NOT_FOUND": "The account was not found."
+    "NOT_FOUND": "The account was not found.",
+    "TEAM_NAME_ALREADY_EXISTS": "An active team already uses this name.",
+    "TEAM_ARCHIVED": "This team is archived and cannot be changed.",
+    "LAST_LEADER_PROTECTED": "A team must keep at least one Leader.",
+    "ALREADY_TEAM_MEMBER": "This person is already in the team.",
+    "INVALID_TEAM_MEMBER": "This account cannot hold that role in a team (Leader and Member must be Members, Observer must be a Manager, and the account must be active)."
   },
   "nav": {
     "label": "Main navigation",
     "home": "Home",
-    "users": "Accounts"
+    "users": "Accounts",
+    "teams": "Teams"
   },
   "common": {
     "cancel": "Cancel",
@@ -92,6 +98,39 @@
     "statuses": {
       "ACTIVE": "Active",
       "LOCKED": "Locked"
+    }
+  },
+  "team": {
+    "title": "Teams",
+    "create": "Create team",
+    "createTitle": "Create team",
+    "editTitle": "Edit team",
+    "name": "Team name",
+    "description": "Description",
+    "memberCount": "Members",
+    "members": "Members",
+    "teamRole": "Team role",
+    "searchPlaceholder": "Search by team name",
+    "empty": "No teams found.",
+    "addMember": "Add member",
+    "remove": "Remove",
+    "removeTitle": "Remove member",
+    "removeConfirm": "Remove {name} from this team?",
+    "archive": "Archive team",
+    "archiveConfirm": "Archive {name}? An archived team can no longer be changed.",
+    "archivedNotice": "This team is archived and can no longer be changed.",
+    "leaderRequired": "Choose at least one Leader.",
+    "pickPerson": "Person",
+    "pickerSearch": "Search...",
+    "pickerEmpty": "No one to choose.",
+    "roles": {
+      "LEADER": "Leader",
+      "MEMBER": "Member",
+      "OBSERVER": "Observer (Manager)"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "ARCHIVED": "Archived"
     }
   }
 }

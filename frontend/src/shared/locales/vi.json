@@ -44,12 +44,18 @@
     "VERSION_CONFLICT": "Tài khoản vừa được người khác thay đổi. Hãy đóng, mở lại rồi thử lại.",
     "LAST_ADMIN_PROTECTED": "Hệ thống phải còn ít nhất một Admin đang hoạt động.",
     "FORBIDDEN": "Bạn không có quyền thực hiện thao tác này.",
-    "NOT_FOUND": "Không tìm thấy tài khoản."
+    "NOT_FOUND": "Không tìm thấy tài khoản.",
+    "TEAM_NAME_ALREADY_EXISTS": "Đã có nhóm đang hoạt động dùng tên này.",
+    "TEAM_ARCHIVED": "Nhóm đã lưu trữ, không thể thay đổi.",
+    "LAST_LEADER_PROTECTED": "Nhóm phải còn ít nhất một Leader.",
+    "ALREADY_TEAM_MEMBER": "Người này đã có trong nhóm.",
+    "INVALID_TEAM_MEMBER": "Tài khoản này không giữ được vai trò đó (Leader và Thành viên phải là tài khoản Thành viên, Người quan sát phải là Quản lý, và tài khoản phải đang hoạt động)."
   },
   "nav": {
     "label": "Điều hướng chính",
     "home": "Trang chủ",
-    "users": "Tài khoản"
+    "users": "Tài khoản",
+    "teams": "Nhóm"
   },
   "common": {
     "cancel": "Huỷ",
@@ -92,6 +98,39 @@
     "statuses": {
       "ACTIVE": "Hoạt động",
       "LOCKED": "Đã khoá"
+    }
+  },
+  "team": {
+    "title": "Nhóm",
+    "create": "Tạo nhóm",
+    "createTitle": "Tạo nhóm",
+    "editTitle": "Sửa nhóm",
+    "name": "Tên nhóm",
+    "description": "Mô tả",
+    "memberCount": "Thành viên",
+    "members": "Thành viên",
+    "teamRole": "Vai trò trong nhóm",
+    "searchPlaceholder": "Tìm theo tên nhóm",
+    "empty": "Không có nhóm nào.",
+    "addMember": "Thêm thành viên",
+    "remove": "Xoá",
+    "removeTitle": "Xoá thành viên",
+    "removeConfirm": "Xoá {name} khỏi nhóm này?",
+    "archive": "Lưu trữ nhóm",
+    "archiveConfirm": "Lưu trữ {name}? Nhóm đã lưu trữ không thể thay đổi nữa.",
+    "archivedNotice": "Nhóm này đã lưu trữ và không thể thay đổi nữa.",
+    "leaderRequired": "Hãy chọn ít nhất một Leader.",
+    "pickPerson": "Người",
+    "pickerSearch": "Tìm...",
+    "pickerEmpty": "Không có ai để chọn.",
+    "roles": {
+      "LEADER": "Leader",
+      "MEMBER": "Thành viên",
+      "OBSERVER": "Người quan sát (Quản lý)"
+    },
+    "statuses": {
+      "ACTIVE": "Đang hoạt động",
+      "ARCHIVED": "Đã lưu trữ"
     }
   }
 }

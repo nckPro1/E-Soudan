@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import BrandMark from './BrandMark.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
@@ -11,14 +11,21 @@ import { usePermission } from '../composables/usePermission'
 const { t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const { can } = usePermission()
 
 const navItems = computed(() =>
   [
-    { name: 'home', label: t('nav.home'), visible: true },
-    { name: 'users', label: t('nav.users'), visible: can('USER_READ') },
+    { name: 'home', path: '/', label: t('nav.home'), visible: true },
+    { name: 'teams', path: '/teams', label: t('nav.teams'), visible: true },
+    { name: 'users', path: '/users', label: t('nav.users'), visible: can('USER_READ') },
   ].filter((item) => item.visible),
 )
+
+/** Mục menu sáng khi đang ở trang đó hoặc trang con của nó (ví dụ /teams/3 sáng mục Nhóm). */
+function isActive(path: string): boolean {
+  return path === '/' ? route.path === '/' : route.path === path || route.path.startsWith(`${path}/`)
+}
 
 async function signOut() {
   await auth.logout()
@@ -59,8 +66,7 @@ async function signOut() {
           :key="item.name"
           :to="{ name: item.name }"
           class="link"
-          active-class="active"
-          exact-active-class="active"
+          :class="{ active: isActive(item.path) }"
         >
           {{ item.label }}
         </RouterLink>

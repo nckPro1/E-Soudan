@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 
-defineProps<{ title: string }>()
+defineProps<{ title: string; wide?: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 
 function onKey(event: KeyboardEvent) {
@@ -18,6 +18,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
   >
     <section
       class="dialog"
+      :class="{ wide }"
       role="dialog"
       aria-modal="true"
       :aria-label="title"
@@ -51,6 +52,10 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
+}
+
+.dialog.wide {
+  max-width: 560px;
 }
 
 .title {
