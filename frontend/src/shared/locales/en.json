@@ -54,7 +54,9 @@
     "FILE_REQUIRED": "This task requires at least one file before review.",
     "ASSIGNEE_NOT_IN_TEAM": "The assignee must be a Member of the team.",
     "INVALID_FILE": "This file is not accepted (type or content not allowed).",
-    "FILE_TOO_LARGE": "The file is larger than 10 MB."
+    "FILE_TOO_LARGE": "The file is larger than 10 MB.",
+    "INVALID_EMOJI": "This is not a valid emoji.",
+    "TOO_MANY_REACTIONS": "This comment already has too many kinds of reactions."
   },
   "nav": {
     "label": "Main navigation",
@@ -191,6 +193,12 @@
     "sendComment": "Post comment",
     "deleteCommentTitle": "Delete comment",
     "deleteCommentConfirm": "Delete this comment?",
-    "commentDeleteFailed": "Could not delete the comment. The list has been refreshed."
+    "commentDeleteFailed": "Could not delete the comment. The list has been refreshed.",
+    "reply": "Reply",
+    "replyingTo": "Replying to {name}",
+    "edited": "edited",
+    "commentDeleted": "This comment has been deleted.",
+    "addReaction": "Add reaction",
+    "moreEmoji": "More..."
   }
 }

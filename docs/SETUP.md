@@ -110,4 +110,9 @@ Các package module hiện chỉ có `package-info.java`; code nghiệp vụ đ�
 - Email gửi sau khi giao dịch đã commit, trên luồng riêng (`@ApplicationModuleListener`): lỗi gửi mail không làm hỏng thao tác của người dùng. Sự kiện gửi lỗi được giữ trong bảng `event_publication` và gửi lại khi khởi động lại ứng dụng.
 - Dev: mọi email đi vào **MailHog**, xem tại http://localhost:8025 (không gửi ra ngoài). Không có `spring.mail.host` thì chỉ ghi log.
 - Cấu hình: `MAIL_FROM` (người gửi), `FRONTEND_URL` (địa chỉ web dùng dựng link, mặc định `http://localhost:5173`); máy chủ SMTP thật qua `SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`.
+- **Bình luận mới** (kể cả trả lời) báo cho người phụ trách và các Leader, trừ người viết; tác giả của bình luận được trả lời nhận thư riêng. Sửa bình luận và thả biểu cảm không gửi email.
 - Người dùng chưa có tuỳ chọn ngôn ngữ email hay tắt thông báo; làm sau nếu cần.
+
+## Biểu cảm (emoji)
+
+Dùng `emoji-picker-element` (Apache-2.0, web component) và dữ liệu `emoji-picker-element-data`, **nhúng sẵn trong bản build** (không gọi CDN). Cả hai chỉ tải khi người dùng mở "Thêm..." trong bảng biểu cảm. Nhãn của bảng chọn đầy đủ (ô tìm kiếm, tên nhóm) hiện bằng tiếng Anh; cần thì truyền thêm bản dịch qua thuộc tính `i18n` của thư viện.

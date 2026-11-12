@@ -9,6 +9,7 @@ import com.soudan.task.domain.TaskComment;
 
 public interface TaskCommentRepository extends JpaRepository<TaskComment, Long> {
 
+	/** Gồm cả bình luận đã xoá mềm (service quyết định hiện hay ẩn). */
 	List<TaskComment> findByTaskIdOrderByCreatedAtAscIdAsc(Long taskId);
 
 	Optional<TaskComment> findByIdAndTaskId(Long id, Long taskId);

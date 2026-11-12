@@ -1,7 +1,10 @@
 package com.soudan.notification.service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +12,7 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 import com.soudan.task.TaskAssignedEvent;
+import com.soudan.task.TaskCommentedEvent;
 import com.soudan.task.TaskSubmittedForReviewEvent;
 import com.soudan.team.TeamApi;
 import com.soudan.team.TeamInfo;
@@ -90,6 +94,65 @@ class TaskMailListener {
 		if (failure != null) {
 			throw failure;
 		}
+	}
+
+	/**
+	 * Báo bình luận mới cho người phụ trách và các Leader; riêng tác giả của bình luận được trả lời thì nhận
+	 * thư "trả lời bình luận của bạn". Người viết không nhận thư của chính mình; mỗi người nhiều nhất một thư.
+	 */
+	@ApplicationModuleListener
+	void on(TaskCommentedEvent event) {
+		Set<Long> recipients = new LinkedHashSet<>();
+		if (event.repliedToAuthorId() != null) {
+			recipients.add(event.repliedToAuthorId());
+		}
+		recipients.add(event.assigneeId());
+		recipients.addAll(teams.findLeaderIds(event.teamId()));
+		recipients.remove(event.authorId());
+		if (recipients.isEmpty()) {
+			return;
+		}
+
+		String author = user(event.authorId()).map(UserSummary::fullName).orElse("Một thành viên");
+		String team = teamName(event.teamId());
+		String excerpt = excerpt(event.body());
+		RuntimeException failure = null;
+		for (UserSummary recipient : users.findSummariesByIds(recipients)) {
+			if (!recipient.active()) {
+				continue;
+			}
+			boolean directReply = recipient.id().equals(event.repliedToAuthorId());
+			String what = directReply ? "đã trả lời bình luận của bạn" : "đã bình luận";
+			String body = """
+					Xin chào %s,
+
+					%s %s trong công việc "%s" của nhóm %s:
+
+					%s
+
+					Mở công việc để xem và trả lời: %s
+
+					-- E-Soudan
+					""".formatted(recipient.fullName(), author, what, event.title(), team, excerpt, link(event.taskId()));
+			String subject = directReply
+					? "[E-Soudan] " + author + " đã trả lời bình luận của bạn: " + event.title()
+					: "[E-Soudan] Bình luận mới: " + event.title();
+			try {
+				email.send(recipient.email(), subject, body);
+			} catch (RuntimeException e) {
+				log.warn("Gửi email tới {} thất bại", recipient.email(), e);
+				failure = e;
+			}
+		}
+		if (failure != null) {
+			throw failure;
+		}
+	}
+
+	/** Trích tối đa 500 ký tự, mỗi dòng thụt vào để nhận ra là phần trích dẫn. */
+	static String excerpt(String text) {
+		String cut = text.length() > 500 ? text.substring(0, 500) + "…" : text;
+		return cut.lines().map(line -> "  > " + line).collect(Collectors.joining("\n"));
 	}
 
 	private Optional<UserSummary> user(Long id) {

@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,7 +20,7 @@ import com.soudan.task.service.TaskCommentService;
 
 import jakarta.validation.Valid;
 
-/** Bình luận trên task. Quyền kiểm tra trong service (cần biết nhóm của task). */
+/** Bình luận trên task. Quyền kiểm tra trong service (cần biết nhóm của task và tác giả bình luận). */
 @RestController
 @RequestMapping("/api/v1/tasks/{taskId}/comments")
 public class TaskCommentController {
@@ -39,12 +41,30 @@ public class TaskCommentController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<CommentResponse> add(@PathVariable Long taskId, @Valid @RequestBody CommentRequest request) {
-		return ApiResponse.ok(mapper.toResponse(service.add(taskId, request.body())));
+		return ApiResponse.ok(mapper.toResponse(service.add(taskId, request.body(), request.replyToId())));
+	}
+
+	@PutMapping("/{commentId}")
+	public ApiResponse<CommentResponse> edit(@PathVariable Long taskId, @PathVariable Long commentId,
+			@Valid @RequestBody CommentRequest request) {
+		return ApiResponse.ok(mapper.toResponse(service.edit(taskId, commentId, request.body())));
 	}
 
 	@DeleteMapping("/{commentId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(@PathVariable Long taskId, @PathVariable Long commentId) {
 		service.delete(taskId, commentId);
+	}
+
+	@PutMapping("/{commentId}/reactions")
+	public ApiResponse<CommentResponse> react(@PathVariable Long taskId, @PathVariable Long commentId,
+			@Valid @RequestBody ReactionRequest request) {
+		return ApiResponse.ok(mapper.toResponse(service.react(taskId, commentId, request.emoji())));
+	}
+
+	@DeleteMapping("/{commentId}/reactions")
+	public ApiResponse<CommentResponse> unreact(@PathVariable Long taskId, @PathVariable Long commentId,
+			@RequestParam String emoji) {
+		return ApiResponse.ok(mapper.toResponse(service.unreact(taskId, commentId, emoji)));
 	}
 }

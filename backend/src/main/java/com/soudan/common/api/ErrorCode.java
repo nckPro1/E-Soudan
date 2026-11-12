@@ -27,6 +27,8 @@ public enum ErrorCode {
 	ASSIGNEE_NOT_IN_TEAM(HttpStatus.UNPROCESSABLE_CONTENT, "Người phụ trách phải là thành viên của nhóm"),
 	INVALID_FILE(HttpStatus.UNPROCESSABLE_CONTENT, "File không hợp lệ"),
 	FILE_TOO_LARGE(HttpStatus.CONTENT_TOO_LARGE, "File quá lớn"),
+	INVALID_EMOJI(HttpStatus.UNPROCESSABLE_CONTENT, "Biểu cảm không hợp lệ"),
+	TOO_MANY_REACTIONS(HttpStatus.UNPROCESSABLE_CONTENT, "Bình luận này đã có quá nhiều loại biểu cảm"),
 	VALIDATION_ERROR(HttpStatus.UNPROCESSABLE_CONTENT, "Dữ liệu không hợp lệ"),
 	CURRENT_PASSWORD_INCORRECT(HttpStatus.UNPROCESSABLE_CONTENT, "Mật khẩu hiện tại không đúng"),
 	INVALID_FILTER(HttpStatus.UNPROCESSABLE_CONTENT, "Trường lọc không được phép"),

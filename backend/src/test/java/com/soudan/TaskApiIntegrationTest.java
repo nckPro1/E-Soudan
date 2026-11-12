@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import com.jayway.jsonpath.JsonPath;
 import com.soudan.common.security.SystemRole;
 import com.soudan.task.TaskAssignedEvent;
+import com.soudan.task.TaskCommentedEvent;
 import com.soudan.task.TaskSubmittedForReviewEvent;
 import com.soudan.user.domain.User;
 
@@ -673,6 +674,234 @@ class TaskApiIntegrationTest extends IntegrationTestBase {
 		long comment = commentOk(a, memberToken, "x");
 
 		send(delete("/api/v1/tasks/" + b + "/comments/" + comment), leaderAToken, null).andExpect(status().isNotFound());
+	}
+
+	// ---- trả lời, sửa, biểu cảm ----
+
+	private long replyOk(long taskId, String token, long replyTo, String text) throws Exception {
+		String json = send(post("/api/v1/tasks/" + taskId + "/comments"), token,
+				"{\"body\":\"" + text + "\",\"replyToId\":" + replyTo + "}")
+				.andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+		return ((Number) JsonPath.read(json, "$.data.id")).longValue();
+	}
+
+	@Test
+	void should_replyToSomeoneElsesComment_asOneLevelThread() throws Exception {
+		long id = createTask("T", member, false);
+		long root = commentOk(id, memberToken, "Em có câu hỏi");
+		long reply = replyOk(id, leaderAToken, root, "Hỏi đi em");
+		// Trả lời một trả lời: vẫn gắn vào bình luận gốc (chỉ một cấp)
+		long replyToReply = replyOk(id, memberToken, reply, "Dạ về hạn chót");
+
+		send(get("/api/v1/tasks/" + id + "/comments"), memberToken, null)
+				.andExpect(jsonPath("$.data.length()").value(3))
+				.andExpect(jsonPath("$.data[0].parentId").doesNotExist())
+				.andExpect(jsonPath("$.data[1].parentId").value(root))
+				.andExpect(jsonPath("$.data[2].id").value(replyToReply))
+				.andExpect(jsonPath("$.data[2].parentId").value(root));
+	}
+
+	@Test
+	void should_rejectReply_toMissingOrForeignComment() throws Exception {
+		long a = createTask("A", member, false);
+		long b = createTask("B", member2, false);
+		long commentOnA = commentOk(a, memberToken, "x");
+
+		send(post("/api/v1/tasks/" + b + "/comments"), member2Token, "{\"body\":\"y\",\"replyToId\":" + commentOnA + "}")
+				.andExpect(status().isNotFound());
+		send(post("/api/v1/tasks/" + a + "/comments"), memberToken, "{\"body\":\"y\",\"replyToId\":999999}")
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void should_keepDeletedParentAsPlaceholder_whenItStillHasReplies() throws Exception {
+		long id = createTask("T", member, false);
+		long root = commentOk(id, memberToken, "bí mật");
+		replyOk(id, leaderAToken, root, "trả lời");
+
+		send(delete("/api/v1/tasks/" + id + "/comments/" + root), memberToken, null).andExpect(status().isNoContent());
+
+		send(get("/api/v1/tasks/" + id + "/comments"), leaderAToken, null)
+				.andExpect(jsonPath("$.data.length()").value(2))
+				.andExpect(jsonPath("$.data[0].deleted").value(true))
+				.andExpect(jsonPath("$.data[0].body").doesNotExist())
+				.andExpect(jsonPath("$.data[0].author").doesNotExist())
+				.andExpect(jsonPath("$.data[1].body").value("trả lời"));
+
+		// Không trả lời được bình luận đã xoá, và không xoá lần hai
+		send(post("/api/v1/tasks/" + id + "/comments"), memberToken, "{\"body\":\"z\",\"replyToId\":" + root + "}")
+				.andExpect(status().isNotFound());
+		send(delete("/api/v1/tasks/" + id + "/comments/" + root), memberToken, null).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void should_hideDeletedParent_whenNoRepliesRemain() throws Exception {
+		long id = createTask("T", member, false);
+		long root = commentOk(id, memberToken, "x");
+		long reply = replyOk(id, leaderAToken, root, "y");
+		send(delete("/api/v1/tasks/" + id + "/comments/" + root), memberToken, null).andExpect(status().isNoContent());
+		send(delete("/api/v1/tasks/" + id + "/comments/" + reply), leaderAToken, null).andExpect(status().isNoContent());
+
+		send(get("/api/v1/tasks/" + id + "/comments"), leaderAToken, null).andExpect(jsonPath("$.data.length()").value(0));
+	}
+
+	@Test
+	void should_letOnlyAuthorEdit_andMarkAsEdited() throws Exception {
+		long id = createTask("T", member, false);
+		long mine = commentOk(id, memberToken, "bản đầu");
+
+		// Leader cũng không được sửa lời người khác
+		send(put("/api/v1/tasks/" + id + "/comments/" + mine), leaderAToken, "{\"body\":\"hack\"}").andExpect(status().isForbidden());
+		send(put("/api/v1/tasks/" + id + "/comments/" + mine), outsiderToken, "{\"body\":\"hack\"}").andExpect(status().isForbidden());
+
+		send(put("/api/v1/tasks/" + id + "/comments/" + mine), memberToken, "{\"body\":\"  bản sửa  \"}")
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.body").value("bản sửa"))
+				.andExpect(jsonPath("$.data.editedAt").exists());
+
+		send(put("/api/v1/tasks/" + id + "/comments/" + mine), memberToken, "{\"body\":\"   \"}")
+				.andExpect(status().isUnprocessableContent());
+		send(put("/api/v1/tasks/" + id + "/comments/" + mine), memberToken, "{\"body\":\"" + "a".repeat(2001) + "\"}")
+				.andExpect(status().isUnprocessableContent());
+		send(put("/api/v1/tasks/" + id + "/comments/999999"), memberToken, "{\"body\":\"x\"}").andExpect(status().isNotFound());
+	}
+
+	@Test
+	void should_notMarkEdited_whenTextUnchanged() throws Exception {
+		long id = createTask("T", member, false);
+		long mine = commentOk(id, memberToken, "giữ nguyên");
+
+		send(put("/api/v1/tasks/" + id + "/comments/" + mine), memberToken, "{\"body\":\"giữ nguyên\"}")
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.editedAt").doesNotExist());
+	}
+
+	private ResultActions react(long taskId, long commentId, String token, String emoji) throws Exception {
+		return send(put("/api/v1/tasks/" + taskId + "/comments/" + commentId + "/reactions"), token,
+				"{\"emoji\":\"" + emoji + "\"}");
+	}
+
+	@Test
+	void should_countReactions_perEmoji_andMarkMine() throws Exception {
+		long id = createTask("T", member, false);
+		long comment = commentOk(id, memberToken, "xong");
+
+		react(id, comment, leaderAToken, "👍").andExpect(status().isOk());
+		react(id, comment, member2Token, "👍").andExpect(status().isOk());
+		react(id, comment, member2Token, "🎉")
+				.andExpect(jsonPath("$.data.reactions.length()").value(2))
+				.andExpect(jsonPath("$.data.reactions[0].emoji").value("👍"))
+				.andExpect(jsonPath("$.data.reactions[0].count").value(2))
+				.andExpect(jsonPath("$.data.reactions[0].reactedByMe").value(true))
+				.andExpect(jsonPath("$.data.reactions[1].emoji").value("🎉"))
+				.andExpect(jsonPath("$.data.reactions[1].count").value(1));
+
+		// Người khác nhìn: tên người đã thả, và "của tôi" tính theo người xem
+		send(get("/api/v1/tasks/" + id + "/comments"), managerToken, null)
+				.andExpect(jsonPath("$.data[0].reactions[0].reactedByMe").value(false))
+				.andExpect(jsonPath("$.data[0].reactions[0].users.length()").value(2));
+	}
+
+	@Test
+	void should_beIdempotent_whenReactingTwiceWithSameEmoji() throws Exception {
+		long id = createTask("T", member, false);
+		long comment = commentOk(id, memberToken, "x");
+
+		react(id, comment, memberToken, "👍").andExpect(status().isOk());
+		react(id, comment, memberToken, "👍")
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.reactions[0].count").value(1));
+	}
+
+	@Test
+	void should_removeOnlyMyOwnReaction() throws Exception {
+		long id = createTask("T", member, false);
+		long comment = commentOk(id, memberToken, "x");
+		react(id, comment, memberToken, "👍");
+		react(id, comment, leaderAToken, "👍");
+
+		send(delete("/api/v1/tasks/" + id + "/comments/" + comment + "/reactions?emoji=👍"), memberToken, null)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.reactions[0].count").value(1))
+				.andExpect(jsonPath("$.data.reactions[0].reactedByMe").value(false));
+		send(delete("/api/v1/tasks/" + id + "/comments/" + comment + "/reactions?emoji=👍"), memberToken, null)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.reactions[0].count").value(1));
+		send(delete("/api/v1/tasks/" + id + "/comments/" + comment + "/reactions?emoji=👍"), leaderAToken, null)
+				.andExpect(jsonPath("$.data.reactions.length()").value(0));
+	}
+
+	@Test
+	void should_rejectNonEmojiReactions_andOutsiders() throws Exception {
+		long id = createTask("T", member, false);
+		long comment = commentOk(id, memberToken, "x");
+
+		for (String bad : new String[] { "a", "<b>", "👍a", "1" }) {
+			react(id, comment, memberToken, bad).andExpect(status().isUnprocessableContent())
+					.andExpect(jsonPath("$.code").value("INVALID_EMOJI"));
+		}
+		react(id, comment, outsiderToken, "👍").andExpect(status().isForbidden());
+		react(id, 999999, memberToken, "👍").andExpect(status().isNotFound());
+	}
+
+	@Test
+	void should_limitDistinctEmojiPerComment() throws Exception {
+		long id = createTask("T", member, false);
+		long comment = commentOk(id, memberToken, "x");
+		String[] twentyOne = { "😀", "😁", "😂", "😃", "😄", "😅", "😆", "😇", "😈", "😉", "😊", "😋", "😌", "😍", "😎", "😏", "😐", "😑", "😒", "😓", "😔" };
+
+		for (int i = 0; i < 20; i++) {
+			react(id, comment, memberToken, twentyOne[i]).andExpect(status().isOk());
+		}
+		react(id, comment, memberToken, twentyOne[20]).andExpect(status().isUnprocessableContent())
+				.andExpect(jsonPath("$.code").value("TOO_MANY_REACTIONS"));
+		// Thêm người vào một loại đã có thì vẫn được
+		react(id, comment, leaderAToken, twentyOne[0]).andExpect(status().isOk());
+	}
+
+	@Test
+	void should_notReactToDeletedComment() throws Exception {
+		long id = createTask("T", member, false);
+		long comment = commentOk(id, memberToken, "x");
+		send(delete("/api/v1/tasks/" + id + "/comments/" + comment), memberToken, null).andExpect(status().isNoContent());
+
+		react(id, comment, leaderAToken, "👍").andExpect(status().isNotFound());
+	}
+
+	// ---- sự kiện bình luận để gửi email ----
+
+	@Test
+	void should_publishCommentedEvent_withReplyTarget() throws Exception {
+		long id = createTask("Viết báo cáo", member, false);
+		long root = commentOk(id, memberToken, "gốc");
+		events.clear();
+
+		long reply = replyOk(id, leaderAToken, root, "trả lời");
+
+		var published = events.stream(TaskCommentedEvent.class).toList();
+		assertThat(published).hasSize(1);
+		assertThat(published.get(0).commentId()).isEqualTo(reply);
+		assertThat(published.get(0).authorId()).isEqualTo(leaderA.getId());
+		assertThat(published.get(0).assigneeId()).isEqualTo(member.getId());
+		assertThat(published.get(0).repliedToAuthorId()).isEqualTo(member.getId());
+		assertThat(published.get(0).teamId()).isEqualTo(teamA);
+		assertThat(published.get(0).title()).isEqualTo("Viết báo cáo");
+		assertThat(published.get(0).body()).isEqualTo("trả lời");
+	}
+
+	@Test
+	void should_notPublishCommentedEvent_forEditReactionDeleteOrRejectedComment() throws Exception {
+		long id = createTask("T", member, false);
+		long comment = commentOk(id, memberToken, "x");
+		events.clear();
+
+		send(put("/api/v1/tasks/" + id + "/comments/" + comment), memberToken, "{\"body\":\"y\"}").andExpect(status().isOk());
+		react(id, comment, leaderAToken, "👍").andExpect(status().isOk());
+		send(post("/api/v1/tasks/" + id + "/comments"), outsiderToken, "{\"body\":\"z\"}").andExpect(status().isForbidden());
+		send(post("/api/v1/tasks/" + id + "/comments"), memberToken, "{\"body\":\" \"}").andExpect(status().isUnprocessableContent());
+		send(delete("/api/v1/tasks/" + id + "/comments/" + comment), memberToken, null).andExpect(status().isNoContent());
+
+		assertThat(events.stream(TaskCommentedEvent.class).count()).isZero();
 	}
 
 	@Test

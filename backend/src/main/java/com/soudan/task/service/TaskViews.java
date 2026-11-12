@@ -25,7 +25,16 @@ public final class TaskViews {
 			String revisionReason, Long version, Instant createdAt, List<SubmissionView> submissions) {
 	}
 
-	public record CommentView(Long id, PersonView author, String body, Instant createdAt) {
+	/** Một loại biểu cảm trên bình luận: bao nhiêu người thả, mình có thả không, và tên những người đã thả. */
+	public record ReactionView(String emoji, int count, boolean reactedByMe, List<String> users) {
+	}
+
+	/**
+	 * Bình luận. {@code deleted} true nghĩa là bình luận gốc đã xoá nhưng còn trả lời: khi đó {@code author} và
+	 * {@code body} là null.
+	 */
+	public record CommentView(Long id, Long parentId, PersonView author, String body, boolean deleted,
+			Instant createdAt, Instant editedAt, List<ReactionView> reactions) {
 	}
 
 	public record HistoryView(Long id, TaskStatus fromStatus, TaskStatus toStatus, PersonView changedBy,

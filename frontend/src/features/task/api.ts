@@ -74,11 +74,28 @@ export async function listComments(taskId: number): Promise<TaskComment[]> {
   return data.data
 }
 
-export async function addComment(taskId: number, body: string): Promise<TaskComment> {
-  const { data } = await http.post<ApiSuccess<TaskComment>>(`/tasks/${taskId}/comments`, { body })
+export async function addComment(taskId: number, body: string, replyToId?: number): Promise<TaskComment> {
+  const { data } = await http.post<ApiSuccess<TaskComment>>(`/tasks/${taskId}/comments`, { body, replyToId })
+  return data.data
+}
+
+export async function editComment(taskId: number, commentId: number, body: string): Promise<TaskComment> {
+  const { data } = await http.put<ApiSuccess<TaskComment>>(`/tasks/${taskId}/comments/${commentId}`, { body })
   return data.data
 }
 
 export async function deleteComment(taskId: number, commentId: number): Promise<void> {
   await http.delete(`/tasks/${taskId}/comments/${commentId}`)
+}
+
+export async function reactToComment(taskId: number, commentId: number, emoji: string): Promise<TaskComment> {
+  const { data } = await http.put<ApiSuccess<TaskComment>>(`/tasks/${taskId}/comments/${commentId}/reactions`, { emoji })
+  return data.data
+}
+
+export async function removeReaction(taskId: number, commentId: number, emoji: string): Promise<TaskComment> {
+  const { data } = await http.delete<ApiSuccess<TaskComment>>(`/tasks/${taskId}/comments/${commentId}/reactions`, {
+    params: { emoji },
+  })
+  return data.data
 }

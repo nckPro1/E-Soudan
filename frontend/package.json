@@ -16,6 +16,8 @@
     "@primeuix/themes": "~2.0.3",
     "@stomp/stompjs": "^7.5.0",
     "axios": "^1.21.1",
+    "emoji-picker-element": "1.29.1",
+    "emoji-picker-element-data": "1.8.0",
     "pinia": "^4.1.0",
     "primeicons": "^8.0.2",
     "primevue": "~4.5.5",

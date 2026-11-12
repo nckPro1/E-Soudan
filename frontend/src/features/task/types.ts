@@ -59,9 +59,22 @@ export interface TaskListQuery {
   assigneeId?: number | ''
 }
 
+export interface Reaction {
+  emoji: string
+  count: number
+  reactedByMe: boolean
+  /** Tên những người đã thả */
+  users: string[]
+}
+
+/** Bình luận. deleted = bình luận gốc đã xoá nhưng còn trả lời (khi đó author và body là null). */
 export interface TaskComment {
   id: number
+  parentId: number | null
   author: Person | null
-  body: string
+  body: string | null
+  deleted: boolean
   createdAt: string
+  editedAt: string | null
+  reactions: Reaction[]
 }

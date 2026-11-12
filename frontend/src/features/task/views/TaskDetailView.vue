@@ -11,9 +11,8 @@ import type { TeamDetail } from '../../team/types'
 import * as taskApi from '../api'
 import TaskFormDialog from '../components/TaskFormDialog.vue'
 import TaskStatusChip from '../components/TaskStatusChip.vue'
-import type { HistoryEntry, Submission, Task, TaskComment } from '../types'
-
-const MAX_COMMENT = 2000
+import TaskComments from '../components/TaskComments.vue'
+import type { HistoryEntry, Submission, Task } from '../types'
 
 const props = defineProps<{ id: number }>()
 
@@ -29,11 +28,6 @@ const auth = useAuthStore()
 const task = ref<Task | null>(null)
 const team = ref<TeamDetail | null>(null)
 const history = ref<HistoryEntry[]>([])
-const comments = ref<TaskComment[]>([])
-const newComment = ref('')
-const posting = ref(false)
-const commentError = ref('')
-const deleteTarget = ref<TaskComment | null>(null)
 const loading = ref(true)
 const acting = ref(false)
 const errorCode = ref('')
@@ -68,14 +62,9 @@ async function load() {
     const loaded = await taskApi.getTask(props.id)
     task.value = loaded
     // Vai trò trong nhóm lấy từ chi tiết nhóm (người xem task cũng xem được nhóm)
-    const [teamDetail, entries, discussion] = await Promise.all([
-      teamApi.getTeam(loaded.teamId),
-      taskApi.getHistory(props.id),
-      taskApi.listComments(props.id),
-    ])
+    const [teamDetail, entries] = await Promise.all([teamApi.getTeam(loaded.teamId), taskApi.getHistory(props.id)])
     team.value = teamDetail
     history.value = entries
-    comments.value = discussion
   } catch (error) {
     errorCode.value = toApiError(error).code
   } finally {
@@ -128,40 +117,6 @@ async function sendRevision() {
     revisionReason.value = ''
   } else {
     revisionOpen.value = false
-  }
-}
-
-const canDeleteComment = (comment: TaskComment) => comment.author?.id === auth.user?.id || isLeader.value
-
-async function postComment() {
-  const text = newComment.value.trim()
-  if (!text || posting.value) return
-  posting.value = true
-  commentError.value = ''
-  try {
-    const saved = await taskApi.addComment(props.id, text)
-    comments.value = [...comments.value, saved]
-    newComment.value = ''
-  } catch (error) {
-    const code = toApiError(error).code
-    commentError.value = te(`errors.${code}`) ? t(`errors.${code}`) : t('errors.UNKNOWN')
-  } finally {
-    posting.value = false
-  }
-}
-
-async function confirmDeleteComment() {
-  const target = deleteTarget.value
-  if (!target) return
-  try {
-    await taskApi.deleteComment(props.id, target.id)
-    comments.value = comments.value.filter((c) => c.id !== target.id)
-  } catch {
-    // Đã bị xoá hoặc không còn quyền: tải lại danh sách cho đúng thực tế
-    commentError.value = t('task.commentDeleteFailed')
-    comments.value = await taskApi.listComments(props.id).catch(() => comments.value)
-  } finally {
-    deleteTarget.value = null
   }
 }
 
@@ -408,68 +363,10 @@ async function download(file: Submission) {
         </ol>
       </section>
 
-      <section>
-        <h2>{{ t('task.comments') }} ({{ comments.length }})</h2>
-        <p
-          v-if="comments.length === 0"
-          class="muted"
-        >
-          {{ t('task.noComments') }}
-        </p>
-        <ul class="comments">
-          <li
-            v-for="comment in comments"
-            :key="comment.id"
-          >
-            <div class="comment-head">
-              <strong>{{ comment.author?.fullName }}</strong>
-              <span class="muted">{{ dateTime(comment.createdAt) }}</span>
-              <button
-                v-if="canDeleteComment(comment)"
-                type="button"
-                class="link danger"
-                @click="deleteTarget = comment"
-              >
-                {{ t('team.remove') }}
-              </button>
-            </div>
-            <!-- Văn bản thuần: {{ }} luôn được Vue escape nên không chạy được HTML hay script -->
-            <p class="comment-body">
-              {{ comment.body }}
-            </p>
-          </li>
-        </ul>
-        <AlertBanner v-if="commentError">
-          {{ commentError }}
-        </AlertBanner>
-        <form
-          class="comment-form"
-          @submit.prevent="postComment"
-        >
-          <label
-            for="new-comment"
-            class="label"
-          >{{ t('task.addComment') }}</label>
-          <textarea
-            id="new-comment"
-            v-model="newComment"
-            class="textarea"
-            rows="3"
-            :maxlength="MAX_COMMENT"
-            :placeholder="t('task.commentPlaceholder')"
-          />
-          <div class="comment-actions">
-            <span class="muted">{{ newComment.length }} / {{ MAX_COMMENT }}</span>
-            <button
-              type="submit"
-              class="btn primary"
-              :disabled="posting || !newComment.trim()"
-            >
-              {{ t('task.sendComment') }}
-            </button>
-          </div>
-        </form>
-      </section>
+      <TaskComments
+        :task-id="task.id"
+        :is-leader="isLeader"
+      />
     </template>
 
     <TaskFormDialog
@@ -480,32 +377,6 @@ async function download(file: Submission) {
       @close="editing = false"
       @saved="onSaved"
     />
-
-    <ModalDialog
-      v-if="deleteTarget"
-      :title="t('task.deleteCommentTitle')"
-      @close="deleteTarget = null"
-    >
-      <p class="confirm-text">
-        {{ t('task.deleteCommentConfirm') }}
-      </p>
-      <div class="buttons">
-        <button
-          type="button"
-          class="btn secondary"
-          @click="deleteTarget = null"
-        >
-          {{ t('common.cancel') }}
-        </button>
-        <button
-          type="button"
-          class="btn primary"
-          @click="confirmDeleteComment"
-        >
-          {{ t('common.confirm') }}
-        </button>
-      </div>
-    </ModalDialog>
 
     <ModalDialog
       v-if="approveOpen"
@@ -724,55 +595,6 @@ dd {
 .note {
   margin: 4px 0 0;
   white-space: pre-wrap;
-}
-
-.comments {
-  margin: 0 0 16px;
-  padding: 0;
-  list-style: none;
-}
-
-.comments li {
-  padding: 12px 16px;
-  margin-bottom: 8px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-.comment-head {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 13px;
-}
-
-.comment-head .link {
-  margin-left: auto;
-}
-
-.comment-body {
-  margin: 6px 0 0;
-  font-size: 14px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.comment-form {
-  max-width: 640px;
-}
-
-.comment-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 8px;
-}
-
-.link.danger {
-  color: var(--color-danger);
 }
 
 .label {

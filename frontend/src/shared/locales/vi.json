@@ -54,7 +54,9 @@
     "FILE_REQUIRED": "Công việc này yêu cầu nộp ít nhất một file trước khi duyệt.",
     "ASSIGNEE_NOT_IN_TEAM": "Người phụ trách phải là Thành viên của nhóm.",
     "INVALID_FILE": "File không được chấp nhận (sai loại hoặc nội dung).",
-    "FILE_TOO_LARGE": "File lớn hơn 10 MB."
+    "FILE_TOO_LARGE": "File lớn hơn 10 MB.",
+    "INVALID_EMOJI": "Đây không phải emoji hợp lệ.",
+    "TOO_MANY_REACTIONS": "Bình luận này đã có quá nhiều loại biểu cảm."
   },
   "nav": {
     "label": "Điều hướng chính",
@@ -191,6 +193,12 @@
     "sendComment": "Gửi bình luận",
     "deleteCommentTitle": "Xoá bình luận",
     "deleteCommentConfirm": "Xoá bình luận này?",
-    "commentDeleteFailed": "Không xoá được bình luận. Danh sách đã được tải lại."
+    "commentDeleteFailed": "Không xoá được bình luận. Danh sách đã được tải lại.",
+    "reply": "Trả lời",
+    "replyingTo": "Đang trả lời {name}",
+    "edited": "đã sửa",
+    "commentDeleted": "Bình luận này đã bị xoá.",
+    "addReaction": "Thả biểu cảm",
+    "moreEmoji": "Thêm..."
   }
 }

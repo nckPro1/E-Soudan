@@ -54,7 +54,9 @@
     "FILE_REQUIRED": "このタスクはレビュー前に1つ以上のファイル提出が必要です。",
     "ASSIGNEE_NOT_IN_TEAM": "担当者はチームのメンバーである必要があります。",
     "INVALID_FILE": "このファイルは受け付けられません（種類または内容が不正）。",
-    "FILE_TOO_LARGE": "ファイルが10MBを超えています。"
+    "FILE_TOO_LARGE": "ファイルが10MBを超えています。",
+    "INVALID_EMOJI": "有効な絵文字ではありません。",
+    "TOO_MANY_REACTIONS": "このコメントにはリアクションの種類が多すぎます。"
   },
   "nav": {
     "label": "メインナビゲーション",
@@ -191,6 +193,12 @@
     "sendComment": "コメントを投稿",
     "deleteCommentTitle": "コメントを削除",
     "deleteCommentConfirm": "このコメントを削除しますか？",
-    "commentDeleteFailed": "コメントを削除できませんでした。一覧を更新しました。"
+    "commentDeleteFailed": "コメントを削除できませんでした。一覧を更新しました。",
+    "reply": "返信",
+    "replyingTo": "{name}さんに返信",
+    "edited": "編集済み",
+    "commentDeleted": "このコメントは削除されました。",
+    "addReaction": "リアクションを追加",
+    "moreEmoji": "もっと見る..."
   }
 }

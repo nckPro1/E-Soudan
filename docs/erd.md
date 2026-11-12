@@ -165,5 +165,11 @@ Chỉ mục: `(team_id, status)`, `assignee_id`.
 `id`, `task_id` (FK), `author_id` (FK → `users`), `body` (VARCHAR 2000, văn bản thuần), cột chung (`created_*`, `updated_*`, `version`, `deleted_at`). Chỉ mục `(task_id, created_at)`.
 
 - Ai xem được task (Admin và mọi người có mặt trong nhóm) thì đọc và viết được bình luận; chỉ tác giả hoặc Leader của nhóm xoá được. Xoá là xoá mềm.
-- Không sửa bình luận (chưa có yêu cầu). Task đã DONE vẫn bình luận được.
-- Bình luận chưa gửi email.
+- Task đã DONE vẫn bình luận được.
+
+### `V6__comment_reply_edit_reaction.sql`: trả lời, sửa, biểu cảm
+
+- `task_comment` thêm `parent_id` (FK tự tham chiếu; **chỉ một cấp**: trả lời một trả lời thì vẫn gắn vào bình luận gốc) và `edited_at` (chỉ đặt khi nội dung thật sự đổi).
+- Bảng `comment_reaction`: `comment_id`, `user_id`, `emoji` (VARCHAR 32), `created_at`, **UNIQUE (comment_id, user_id, emoji)**. Chỉ nhận chuỗi emoji thật (kiểm tra bằng `Character.isEmoji`, có xử lý chuỗi ghép ZWJ, màu da, cờ, keycap); tối đa 20 loại emoji khác nhau trên một bình luận.
+- Chỉ **tác giả** sửa được (Leader cũng không sửa lời người khác). Xoá: tác giả hoặc Leader. Bình luận gốc đã xoá mà còn trả lời thì vẫn trả ra dạng `deleted = true` (không có nội dung, tác giả) để các trả lời có chỗ bám; hết trả lời thì ẩn hẳn.
+- Email bình luận gửi cho người phụ trách và các Leader (trừ chính người viết); tác giả của bình luận được trả lời nhận thư riêng "đã trả lời bình luận của bạn". Sửa bình luận và thả biểu cảm không gửi email.
