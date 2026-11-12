@@ -116,3 +116,17 @@ Các package module hiện chỉ có `package-info.java`; code nghiệp vụ đ�
 ## Biểu cảm (emoji)
 
 Dùng `emoji-picker-element` (Apache-2.0, web component) và dữ liệu `emoji-picker-element-data`, **nhúng sẵn trong bản build** (không gọi CDN). Cả hai chỉ tải khi người dùng mở "Thêm..." trong bảng biểu cảm. Nhãn của bảng chọn đầy đủ (ô tìm kiếm, tên nhóm) hiện bằng tiếng Anh; cần thì truyền thêm bản dịch qua thuộc tính `i18n` của thư viện.
+
+### Gửi email thật (thay vì MailHog)
+
+Đặt biến môi trường **trước khi chạy backend** (không ghi mật khẩu vào file nào trong repo), ví dụ Gmail:
+
+```powershell
+$env:MAIL_HOST='smtp.gmail.com'; $env:MAIL_PORT='587'
+$env:MAIL_USERNAME='ban@gmail.com'; $env:MAIL_PASSWORD='<mật khẩu ứng dụng 16 ký tự>'
+$env:MAIL_SMTP_AUTH='true'; $env:MAIL_FROM='ban@gmail.com'
+```
+
+- Gmail yêu cầu **mật khẩu ứng dụng** (bật xác minh 2 bước rồi tạo tại myaccount.google.com/apppasswords), không dùng mật khẩu đăng nhập.
+- Email chỉ đến được hộp thư thật nếu **tài khoản người dùng trong hệ thống có địa chỉ email thật**. Tài khoản mẫu như `admin@soudan.local` hay `e2e-...@soudan.local` là địa chỉ giả nên không bao giờ nhận được thư.
+- Lỗi gửi (sai mật khẩu, bị chặn...) được ghi log của backend (`Gửi email tới ... thất bại`), sự kiện được giữ lại và gửi lại khi khởi động lại backend.
