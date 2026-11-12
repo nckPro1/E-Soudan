@@ -1,5 +1,11 @@
 # Chỉ dùng cục bộ với docker-compose.yml ở thư mục gốc.
 spring:
+  config:
+    # Đọc biến cục bộ (MAIL_*, ADMIN_*...) từ file .env nếu có: ở thư mục backend hoặc thư mục gốc dự án.
+    # .env đã nằm trong .gitignore nên khoá/mật khẩu không bao giờ vào repo.
+    import:
+      - optional:file:../.env[.properties]
+      - optional:file:./.env[.properties]
   datasource:
     url: jdbc:postgresql://localhost:5432/soudan
     username: soudan
