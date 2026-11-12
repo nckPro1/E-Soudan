@@ -7,15 +7,18 @@ import { toApiError } from '../../../shared/api/http'
 import { useAuthStore } from '../../auth/store'
 import * as taskApi from '../api'
 import type { TaskComment } from '../types'
+import CommentComposer from './CommentComposer.vue'
 import CommentItem from './CommentItem.vue'
 
 /**
- * Khu bình luận của một task: viết, trả lời (một cấp), sửa bình luận của mình, xoá (của mình, hoặc của người khác
- * nếu là Leader) và thả biểu cảm. Backend vẫn là nơi quyết định mọi quyền.
+ * Khu bình luận của một task, kiểu Facebook: bong bóng bình luận, biểu cảm, phản hồi một cấp, sửa bình luận của
+ * mình, xoá (của mình, hoặc của người khác nếu là Leader). Backend vẫn là nơi quyết định mọi quyền.
  */
 const props = defineProps<{ taskId: number; isLeader: boolean }>()
 
-const MAX = 2000
+/** Chuỗi có nhiều hơn số này phản hồi thì thu gọn, chỉ hiện phản hồi mới nhất kèm nút "Xem ... phản hồi". */
+const COLLAPSE_OVER = 2
+
 const { t, te } = useI18n()
 const auth = useAuthStore()
 
@@ -30,11 +33,26 @@ const replyTo = ref<TaskComment | null>(null)
 const replyText = ref('')
 const editingId = ref<number | null>(null)
 const deleteTarget = ref<TaskComment | null>(null)
+const expanded = ref<Set<number>>(new Set())
 
+const myName = computed(() => auth.user?.fullName ?? '')
 const roots = computed(() => comments.value.filter((c) => c.parentId === null))
 const repliesOf = (id: number) => comments.value.filter((c) => c.parentId === id)
 const liveCount = computed(() => comments.value.filter((c) => !c.deleted).length)
 const isMine = (c: TaskComment) => c.author?.id === auth.user?.id
+
+/** Các phản hồi đang hiện của một chuỗi (thu gọn thì chỉ phản hồi mới nhất). */
+function visibleReplies(root: TaskComment): TaskComment[] {
+  const all = repliesOf(root.id)
+  return all.length > COLLAPSE_OVER && !expanded.value.has(root.id) ? all.slice(-1) : all
+}
+const hiddenCount = (root: TaskComment) => repliesOf(root.id).length - visibleReplies(root).length
+const replyFormOpenFor = (root: TaskComment) =>
+  replyTo.value !== null && (replyTo.value.id === root.id || replyTo.value.parentId === root.id)
+
+function expand(rootId: number) {
+  expanded.value = new Set(expanded.value).add(rootId)
+}
 
 function message(err: unknown): string {
   const code = toApiError(err).code
@@ -57,17 +75,18 @@ function replace(updated: TaskComment) {
   comments.value = comments.value.map((c) => (c.id === updated.id ? updated : c))
 }
 
-async function post(text: string, replyToId?: number): Promise<boolean> {
+async function post(text: string, replyToId?: number): Promise<TaskComment | null> {
   const body = text.trim()
-  if (!body || posting.value) return false
+  if (!body || posting.value) return null
   posting.value = true
   error.value = ''
   try {
-    comments.value = [...comments.value, await taskApi.addComment(props.taskId, body, replyToId)]
-    return true
+    const saved = await taskApi.addComment(props.taskId, body, replyToId)
+    comments.value = [...comments.value, saved]
+    return saved
   } catch (err) {
     error.value = message(err)
-    return false
+    return null
   } finally {
     posting.value = false
   }
@@ -78,7 +97,9 @@ async function submitNew() {
 }
 
 async function submitReply() {
-  if (replyTo.value && (await post(replyText.value, replyTo.value.id))) {
+  const target = replyTo.value
+  if (target && (await post(replyText.value, target.id))) {
+    expand(target.parentId ?? target.id)
     replyTo.value = null
     replyText.value = ''
   }
@@ -155,6 +176,7 @@ async function confirmDelete() {
       <li
         v-for="root in roots"
         :key="root.id"
+        class="thread"
       >
         <CommentItem
           :comment="root"
@@ -170,92 +192,75 @@ async function confirmDelete() {
           @toggle="toggleReaction(root, $event)"
         />
 
-        <ul class="replies">
-          <li
-            v-for="reply in repliesOf(root.id)"
-            :key="reply.id"
-          >
-            <CommentItem
-              :comment="reply"
-              :is-mine="isMine(reply)"
-              :can-delete="isMine(reply) || isLeader"
-              :editing="editingId === reply.id"
-              :busy="busy"
-              @reply="startReply(reply)"
-              @start-edit="editingId = reply.id"
-              @cancel-edit="editingId = null"
-              @save-edit="saveEdit(reply, $event)"
-              @delete="deleteTarget = reply"
-              @toggle="toggleReaction(reply, $event)"
-            />
-          </li>
-        </ul>
-
-        <!-- Form trả lời hiện ngay dưới chuỗi đang được trả lời -->
-        <form
-          v-if="replyTo && (replyTo.id === root.id || replyTo.parentId === root.id)"
-          class="reply-form"
-          @submit.prevent="submitReply"
+        <div
+          v-if="repliesOf(root.id).length > 0 || replyFormOpenFor(root)"
+          class="replies"
         >
-          <label
-            :for="`reply-${root.id}`"
-            class="label"
-          >{{ t('task.replyingTo', { name: replyTo.author?.fullName ?? '' }) }}</label>
-          <textarea
-            :id="`reply-${root.id}`"
-            v-model="replyText"
-            class="textarea"
-            rows="2"
-            :maxlength="MAX"
-            data-testid="reply-input"
+          <button
+            v-if="hiddenCount(root) > 0"
+            type="button"
+            class="view-replies"
+            data-testid="view-replies"
+            @click="expand(root.id)"
+          >
+            {{ t('task.viewReplies', { count: hiddenCount(root) }) }}
+          </button>
+
+          <CommentItem
+            v-for="reply in visibleReplies(root)"
+            :key="reply.id"
+            small
+            :comment="reply"
+            :is-mine="isMine(reply)"
+            :can-delete="isMine(reply) || isLeader"
+            :editing="editingId === reply.id"
+            :busy="busy"
+            @reply="startReply(reply)"
+            @start-edit="editingId = reply.id"
+            @cancel-edit="editingId = null"
+            @save-edit="saveEdit(reply, $event)"
+            @delete="deleteTarget = reply"
+            @toggle="toggleReaction(reply, $event)"
           />
-          <div class="row">
-            <button
-              type="button"
-              class="btn"
-              @click="replyTo = null"
-            >
-              {{ t('common.cancel') }}
-            </button>
-            <button
-              type="submit"
-              class="btn primary"
-              :disabled="posting || !replyText.trim()"
-            >
-              {{ t('task.sendComment') }}
-            </button>
+
+          <div
+            v-if="replyFormOpenFor(root)"
+            class="reply-form"
+          >
+            <CommentComposer
+              v-model="replyText"
+              small
+              autofocus
+              :avatar-name="myName"
+              :busy="posting"
+              :placeholder="t('task.writeReply', { name: replyTo?.author?.fullName ?? '' })"
+              @submit="submitReply"
+              @cancel="replyTo = null"
+            />
+            <p class="cancel-reply">
+              {{ t('task.escToCancel') }}
+              <button
+                type="button"
+                class="link"
+                @click="replyTo = null"
+              >
+                {{ t('common.cancel') }}
+              </button>
+            </p>
           </div>
-        </form>
+        </div>
       </li>
     </ul>
 
-    <form
-      class="new-form"
-      @submit.prevent="submitNew"
-    >
-      <label
-        for="new-comment"
-        class="label"
-      >{{ t('task.addComment') }}</label>
-      <textarea
-        id="new-comment"
+    <div class="new-comment">
+      <CommentComposer
         v-model="newText"
-        class="textarea"
-        rows="3"
-        :maxlength="MAX"
-        :placeholder="t('task.commentPlaceholder')"
+        :avatar-name="myName"
+        :busy="posting"
+        :placeholder="t('task.writeComment')"
+        @submit="submitNew"
       />
-      <div class="row between">
-        <span class="muted">{{ newText.length }} / {{ MAX }}</span>
-        <button
-          type="submit"
-          class="btn primary"
-          :disabled="posting || !newText.trim()"
-        >
-          {{ t('task.sendComment') }}
-        </button>
-      </div>
-    </form>
+    </div>
 
     <ModalDialog
       v-if="deleteTarget"
@@ -294,57 +299,64 @@ h2 {
 }
 
 .muted {
-  margin: 0;
+  margin: 0 0 12px;
   font-size: 13px;
   color: var(--color-text-secondary);
 }
 
-.threads,
-.replies {
+.threads {
+  max-width: 720px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.threads > li {
-  margin-bottom: 12px;
+.thread {
+  margin-bottom: 16px;
 }
 
+/* Phản hồi thụt vào bằng đúng bề rộng ảnh đại diện + khoảng cách */
 .replies {
-  margin-left: 24px;
-  padding-left: 12px;
-  border-left: 2px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0 40px;
 }
 
-.replies > li {
-  margin-top: 8px;
-}
-
-.reply-form,
-.new-form {
-  max-width: 640px;
-  margin: 8px 0 0 24px;
-}
-
-.new-form {
-  margin: 16px 0 0;
-}
-
-.label {
-  display: block;
-  margin-bottom: 6px;
+.view-replies {
+  align-self: flex-start;
+  padding: 0;
+  background: none;
+  border: 0;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
 }
 
-.textarea {
-  width: 100%;
-  padding: 10px 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  resize: vertical;
+.view-replies:hover {
+  text-decoration: underline;
+}
+
+.cancel-reply {
+  margin: 4px 0 0 32px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.link {
+  margin-left: 6px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-size: 12px;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.new-comment {
+  max-width: 720px;
+  margin-top: 8px;
 }
 
 .row {
@@ -352,11 +364,6 @@ h2 {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 8px;
-}
-
-.row.between {
-  align-items: center;
-  justify-content: space-between;
 }
 
 .btn {
@@ -368,11 +375,6 @@ h2 {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .btn.primary {

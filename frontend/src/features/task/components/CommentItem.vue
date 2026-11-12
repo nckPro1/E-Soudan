@@ -1,16 +1,26 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import UserAvatar from '../../../shared/components/UserAvatar.vue'
+import { timeAgo } from '../../../shared/utils/time'
 import type { TaskComment } from '../types'
-import ReactionBar from './ReactionBar.vue'
+import ReactionPicker from './ReactionPicker.vue'
+import ReactionSummary from './ReactionSummary.vue'
 
-/** Một bình luận: nội dung, thao tác (trả lời/sửa/xoá), biểu cảm. Form trả lời do component cha dựng bên dưới. */
+/**
+ * Một bình luận kiểu Facebook: ảnh đại diện, bong bóng (tên + nội dung), tóm tắt biểu cảm gắn ở góc bong bóng,
+ * và hàng thao tác nhỏ bên dưới (Thích · Cảm xúc · Phản hồi · Sửa · Xoá · thời gian).
+ * Không tự thả biểu cảm vào bình luận của mình: với bình luận của mình không có "Thích"/"Cảm xúc".
+ * Form trả lời do component cha dựng bên dưới.
+ */
 const props = defineProps<{
   comment: TaskComment
   isMine: boolean
   canDelete: boolean
   editing: boolean
   busy: boolean
+  /** Bình luận trả lời: ảnh đại diện nhỏ hơn */
+  small?: boolean
 }>()
 const emit = defineEmits<{
   reply: []
@@ -21,170 +31,316 @@ const emit = defineEmits<{
   toggle: [emoji: string]
 }>()
 
+const LIKE = '👍'
 const MAX = 2000
 const { t, locale } = useI18n()
 const draft = ref('')
+const editInput = ref<HTMLTextAreaElement | null>(null)
 
-// Mở chế độ sửa thì điền sẵn nội dung hiện tại
+// Mở chế độ sửa thì điền sẵn nội dung và đưa con trỏ vào cuối
 watch(
   () => props.editing,
-  (value) => {
-    if (value) draft.value = props.comment.body ?? ''
+  async (value) => {
+    if (!value) return
+    draft.value = props.comment.body ?? ''
+    await nextTick()
+    editInput.value?.focus()
+    editInput.value?.setSelectionRange(draft.value.length, draft.value.length)
   },
   { immediate: true },
 )
 
-const dateTime = (iso: string) => new Date(iso).toLocaleString(locale.value)
+const liked = computed(() => props.comment.reactions.some((r) => r.emoji === LIKE && r.reactedByMe))
+const when = computed(() => timeAgo(props.comment.createdAt, locale.value) ?? t('task.justNow'))
+const fullDate = computed(() => new Date(props.comment.createdAt).toLocaleString(locale.value))
+const authorName = computed(() => props.comment.author?.fullName ?? '')
+
+function onEditKey(event: KeyboardEvent) {
+  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+    event.preventDefault()
+    if (draft.value.trim() && !props.busy) emit('saveEdit', draft.value)
+  } else if (event.key === 'Escape') {
+    emit('cancelEdit')
+  }
+}
 </script>
 
 <template>
   <article
     class="comment"
-    :class="{ gone: comment.deleted }"
+    :class="{ small }"
   >
-    <p
-      v-if="comment.deleted"
-      class="placeholder"
-    >
-      {{ t('task.commentDeleted') }}
-    </p>
+    <UserAvatar
+      v-if="!comment.deleted"
+      :name="authorName"
+      :size="small ? 24 : 32"
+    />
+    <span
+      v-else
+      class="ghost"
+      :class="{ small }"
+    />
 
-    <template v-else>
-      <div class="head">
-        <strong>{{ comment.author?.fullName }}</strong>
-        <span class="muted">{{ dateTime(comment.createdAt) }}</span>
-        <span
-          v-if="comment.editedAt"
-          class="muted"
-          :title="dateTime(comment.editedAt)"
-        >· {{ t('task.edited') }}</span>
-      </div>
-
-      <form
-        v-if="editing"
-        class="edit"
-        @submit.prevent="emit('saveEdit', draft)"
-      >
-        <textarea
-          v-model="draft"
-          class="textarea"
-          rows="3"
-          :maxlength="MAX"
-          :aria-label="t('common.edit')"
-          data-testid="edit-input"
-        />
-        <div class="row">
-          <button
-            type="button"
-            class="btn"
-            :disabled="busy"
-            @click="emit('cancelEdit')"
-          >
-            {{ t('common.cancel') }}
-          </button>
-          <button
-            type="submit"
-            class="btn primary"
-            :disabled="busy || !draft.trim()"
-          >
-            {{ t('common.save') }}
-          </button>
-        </div>
-      </form>
-      <!-- Văn bản thuần: {{ }} luôn được Vue escape nên không chạy được HTML hay script -->
-      <p
-        v-else
-        class="body"
-      >
-        {{ comment.body }}
-      </p>
-
-      <ReactionBar
-        v-if="!editing"
-        :reactions="comment.reactions"
-        :disabled="busy"
-        @toggle="emit('toggle', $event)"
-      />
-
+    <div class="main">
       <div
-        v-if="!editing"
-        class="actions"
+        v-if="comment.deleted"
+        class="bubble gone"
       >
-        <button
-          type="button"
-          class="link"
-          @click="emit('reply')"
-        >
-          {{ t('task.reply') }}
-        </button>
-        <button
-          v-if="isMine"
-          type="button"
-          class="link"
-          @click="emit('startEdit')"
-        >
-          {{ t('common.edit') }}
-        </button>
-        <button
-          v-if="canDelete"
-          type="button"
-          class="link danger"
-          @click="emit('delete')"
-        >
-          {{ t('team.remove') }}
-        </button>
+        {{ t('task.commentDeleted') }}
       </div>
-    </template>
+
+      <template v-else>
+        <form
+          v-if="editing"
+          class="edit"
+          @submit.prevent="draft.trim() && !busy && emit('saveEdit', draft)"
+        >
+          <textarea
+            ref="editInput"
+            v-model="draft"
+            class="edit-input"
+            rows="2"
+            :maxlength="MAX"
+            :aria-label="t('common.edit')"
+            data-testid="edit-input"
+            @keydown="onEditKey"
+          />
+          <p class="hint">
+            {{ t('task.editHint') }}
+            <button
+              type="button"
+              class="link"
+              @click="emit('cancelEdit')"
+            >
+              {{ t('common.cancel') }}
+            </button>
+            <button
+              type="submit"
+              class="link strong"
+              :disabled="busy || !draft.trim()"
+            >
+              {{ t('common.save') }}
+            </button>
+          </p>
+        </form>
+
+        <template v-else>
+          <div class="bubble-wrap">
+            <div class="bubble">
+              <strong class="name">{{ authorName }}</strong>
+              <!-- Văn bản thuần: {{ }} luôn được Vue escape nên không chạy được HTML hay script -->
+              <p class="text">
+                {{ comment.body }}
+              </p>
+            </div>
+            <ReactionSummary
+              v-if="comment.reactions.length > 0"
+              class="reactions"
+              :reactions="comment.reactions"
+            />
+          </div>
+
+          <div class="meta">
+            <template v-if="!isMine">
+              <button
+                type="button"
+                class="action"
+                :class="{ active: liked }"
+                :disabled="busy"
+                :aria-pressed="liked"
+                data-testid="like"
+                @click="emit('toggle', LIKE)"
+              >
+                {{ t('task.like') }}
+              </button>
+              <ReactionPicker
+                :reactions="comment.reactions"
+                :disabled="busy"
+                @pick="emit('toggle', $event)"
+              />
+            </template>
+            <button
+              type="button"
+              class="action"
+              @click="emit('reply')"
+            >
+              {{ t('task.reply') }}
+            </button>
+            <button
+              v-if="isMine"
+              type="button"
+              class="action"
+              @click="emit('startEdit')"
+            >
+              {{ t('common.edit') }}
+            </button>
+            <button
+              v-if="canDelete"
+              type="button"
+              class="action danger"
+              @click="emit('delete')"
+            >
+              {{ t('team.remove') }}
+            </button>
+            <time
+              class="time"
+              :datetime="comment.createdAt"
+              :title="fullDate"
+            >{{ when }}</time>
+            <span
+              v-if="comment.editedAt"
+              class="time"
+            >· {{ t('task.edited') }}</span>
+          </div>
+        </template>
+      </template>
+    </div>
   </article>
 </template>
 
 <style scoped>
 .comment {
-  padding: 12px 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
-.comment.gone {
-  background: var(--color-surface-muted);
+.ghost {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
 }
 
-.placeholder {
-  margin: 0;
+.ghost.small {
+  width: 24px;
+  height: 24px;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.bubble-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.bubble {
+  padding: 8px 14px;
+  background: var(--color-bubble);
+  border-radius: 18px;
+}
+
+.bubble.gone {
+  display: inline-block;
+  background: transparent;
+  border: 1px dashed var(--color-border);
   font-size: 13px;
   font-style: italic;
   color: var(--color-text-secondary);
 }
 
-.head {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+.name {
+  display: block;
   font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
 }
 
-.muted {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-.body {
-  margin: 6px 0 0;
+.text {
+  margin: 0;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 20px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
-.actions {
+/* Tóm tắt biểu cảm gắn ở góc dưới bên phải bong bóng, nhô ra như Facebook */
+.reactions {
+  position: absolute;
+  right: -8px;
+  bottom: -12px;
+}
+
+.meta {
   display: flex;
-  gap: 16px;
-  margin-top: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 4px 0 0 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* Chừa chỗ cho viên tóm tắt biểu cảm đang nhô xuống */
+.bubble-wrap:has(.reactions) + .meta {
+  margin-top: 16px;
+}
+
+.action {
+  padding: 0;
+  background: none;
+  border: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.action:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.action.active {
+  color: var(--color-primary);
+}
+
+.action.danger:hover {
+  color: var(--color-danger);
+}
+
+.action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.time {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.edit {
+  max-width: 560px;
+}
+
+.edit-input {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  border-radius: 18px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  resize: vertical;
+}
+
+.edit-input:focus {
+  outline: 0;
+}
+
+.hint {
+  margin: 4px 0 0 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }
 
 .link {
+  margin-left: 8px;
   padding: 0;
   background: none;
   border: 0;
@@ -193,55 +349,12 @@ const dateTime = (iso: string) => new Date(iso).toLocaleString(locale.value)
   cursor: pointer;
 }
 
-.link:hover {
-  text-decoration: underline;
+.link.strong {
+  font-weight: 600;
 }
 
-.link.danger {
-  margin-left: auto;
-  color: var(--color-danger);
-}
-
-.edit {
-  margin-top: 6px;
-}
-
-.textarea {
-  width: 100%;
-  padding: 10px 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  resize: vertical;
-}
-
-.row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.btn {
-  height: 32px;
-  padding: 0 14px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
+.link:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-}
-
-.btn.primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
 }
 </style>

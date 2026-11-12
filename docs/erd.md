@@ -171,5 +171,6 @@ Chỉ mục: `(team_id, status)`, `assignee_id`.
 
 - `task_comment` thêm `parent_id` (FK tự tham chiếu; **chỉ một cấp**: trả lời một trả lời thì vẫn gắn vào bình luận gốc) và `edited_at` (chỉ đặt khi nội dung thật sự đổi).
 - Bảng `comment_reaction`: `comment_id`, `user_id`, `emoji` (VARCHAR 32), `created_at`, **UNIQUE (comment_id, user_id, emoji)**. Chỉ nhận chuỗi emoji thật (kiểm tra bằng `Character.isEmoji`, có xử lý chuỗi ghép ZWJ, màu da, cờ, keycap); tối đa 20 loại emoji khác nhau trên một bình luận.
+- **Không tự thả biểu cảm vào bình luận của chính mình** (403 `SELF_REACTION`, áp dụng cả Leader); người khác vẫn thả được. Gỡ biểu cảm của mình luôn được.
 - Chỉ **tác giả** sửa được (Leader cũng không sửa lời người khác). Xoá: tác giả hoặc Leader. Bình luận gốc đã xoá mà còn trả lời thì vẫn trả ra dạng `deleted = true` (không có nội dung, tác giả) để các trả lời có chỗ bám; hết trả lời thì ẩn hẳn.
 - Email bình luận gửi cho người phụ trách và các Leader (trừ chính người viết); tác giả của bình luận được trả lời nhận thư riêng "đã trả lời bình luận của bạn". Sửa bình luận và thả biểu cảm không gửi email.

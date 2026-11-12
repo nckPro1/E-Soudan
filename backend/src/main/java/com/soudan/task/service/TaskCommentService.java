@@ -113,12 +113,16 @@ public class TaskCommentService {
 		comments.saveAndFlush(comment);
 	}
 
-	/** Thả biểu cảm. Thả lại cùng emoji thì không đổi gì (idempotent). */
+	/** Thả biểu cảm vào bình luận của người khác. Thả lại cùng emoji thì không đổi gì (idempotent). */
 	public CommentView react(Long taskId, Long commentId, String emoji) {
 		requireCanView(load(taskId));
-		live(taskId, commentId);
-		String clean = CommentReaction.requireEmoji(emoji);
+		TaskComment comment = live(taskId, commentId);
 		Long me = currentUser.require().id();
+		// Không tự thả biểu cảm vào bình luận của mình (giống mạng xã hội: biểu cảm là phản hồi của người khác)
+		if (comment.getAuthorId().equals(me)) {
+			throw new ForbiddenException(ErrorCode.SELF_REACTION);
+		}
+		String clean = CommentReaction.requireEmoji(emoji);
 		if (reactions.findByCommentIdAndUserIdAndEmoji(commentId, me, clean).isEmpty()) {
 			boolean newKind = !reactions.existsByCommentIdAndEmoji(commentId, clean);
 			if (newKind && reactions.countDistinctEmoji(commentId) >= CommentReaction.MAX_DISTINCT_PER_COMMENT) {

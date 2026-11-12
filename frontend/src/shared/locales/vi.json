@@ -56,7 +56,8 @@
     "INVALID_FILE": "File không được chấp nhận (sai loại hoặc nội dung).",
     "FILE_TOO_LARGE": "File lớn hơn 10 MB.",
     "INVALID_EMOJI": "Đây không phải emoji hợp lệ.",
-    "TOO_MANY_REACTIONS": "Bình luận này đã có quá nhiều loại biểu cảm."
+    "TOO_MANY_REACTIONS": "Bình luận này đã có quá nhiều loại biểu cảm.",
+    "SELF_REACTION": "Bạn không thể thả cảm xúc vào bình luận của chính mình."
   },
   "nav": {
     "label": "Điều hướng chính",
@@ -194,11 +195,20 @@
     "deleteCommentTitle": "Xoá bình luận",
     "deleteCommentConfirm": "Xoá bình luận này?",
     "commentDeleteFailed": "Không xoá được bình luận. Danh sách đã được tải lại.",
-    "reply": "Trả lời",
+    "reply": "Phản hồi",
     "replyingTo": "Đang trả lời {name}",
-    "edited": "đã sửa",
+    "edited": "Đã chỉnh sửa",
     "commentDeleted": "Bình luận này đã bị xoá.",
     "addReaction": "Thả biểu cảm",
-    "moreEmoji": "Thêm..."
+    "moreEmoji": "Thêm...",
+    "like": "Thích",
+    "react": "Cảm xúc",
+    "justNow": "Vừa xong",
+    "writeComment": "Viết bình luận...",
+    "writeReply": "Phản hồi {name}...",
+    "viewReplies": "Xem thêm {count} phản hồi",
+    "whoReacted": "Ai đã thả cảm xúc",
+    "editHint": "Nhấn Enter để lưu · Esc để huỷ",
+    "escToCancel": "Nhấn Esc để huỷ ·"
   }
 }

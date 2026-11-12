@@ -807,8 +807,8 @@ class TaskApiIntegrationTest extends IntegrationTestBase {
 		long id = createTask("T", member, false);
 		long comment = commentOk(id, memberToken, "x");
 
-		react(id, comment, memberToken, "👍").andExpect(status().isOk());
-		react(id, comment, memberToken, "👍")
+		react(id, comment, leaderAToken, "👍").andExpect(status().isOk());
+		react(id, comment, leaderAToken, "👍")
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.reactions[0].count").value(1));
 	}
@@ -816,7 +816,7 @@ class TaskApiIntegrationTest extends IntegrationTestBase {
 	@Test
 	void should_removeOnlyMyOwnReaction() throws Exception {
 		long id = createTask("T", member, false);
-		long comment = commentOk(id, memberToken, "x");
+		long comment = commentOk(id, member2Token, "x");
 		react(id, comment, memberToken, "👍");
 		react(id, comment, leaderAToken, "👍");
 
@@ -837,7 +837,7 @@ class TaskApiIntegrationTest extends IntegrationTestBase {
 		long comment = commentOk(id, memberToken, "x");
 
 		for (String bad : new String[] { "a", "<b>", "👍a", "1" }) {
-			react(id, comment, memberToken, bad).andExpect(status().isUnprocessableContent())
+			react(id, comment, leaderAToken, bad).andExpect(status().isUnprocessableContent())
 					.andExpect(jsonPath("$.code").value("INVALID_EMOJI"));
 		}
 		react(id, comment, outsiderToken, "👍").andExpect(status().isForbidden());
@@ -851,12 +851,37 @@ class TaskApiIntegrationTest extends IntegrationTestBase {
 		String[] twentyOne = { "😀", "😁", "😂", "😃", "😄", "😅", "😆", "😇", "😈", "😉", "😊", "😋", "😌", "😍", "😎", "😏", "😐", "😑", "😒", "😓", "😔" };
 
 		for (int i = 0; i < 20; i++) {
-			react(id, comment, memberToken, twentyOne[i]).andExpect(status().isOk());
+			react(id, comment, leaderAToken, twentyOne[i]).andExpect(status().isOk());
 		}
-		react(id, comment, memberToken, twentyOne[20]).andExpect(status().isUnprocessableContent())
+		react(id, comment, leaderAToken, twentyOne[20]).andExpect(status().isUnprocessableContent())
 				.andExpect(jsonPath("$.code").value("TOO_MANY_REACTIONS"));
 		// Thêm người vào một loại đã có thì vẫn được
-		react(id, comment, leaderAToken, twentyOne[0]).andExpect(status().isOk());
+		react(id, comment, member2Token, twentyOne[0]).andExpect(status().isOk());
+	}
+
+	@Test
+	void should_forbidReactingToOwnComment_forEveryone() throws Exception {
+		long id = createTask("T", member, false);
+		long byMember = commentOk(id, memberToken, "của member");
+		long byLeader = commentOk(id, leaderAToken, "của leader");
+
+		react(id, byMember, memberToken, "👍").andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("SELF_REACTION"));
+		react(id, byLeader, leaderAToken, "❤️").andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("SELF_REACTION"));
+		// Thả vào bình luận của người khác thì được; bình luận của mình vẫn không có biểu cảm nào
+		react(id, byMember, leaderAToken, "👍").andExpect(status().isOk());
+		send(get("/api/v1/tasks/" + id + "/comments"), memberToken, null)
+				.andExpect(jsonPath("$.data[1].reactions.length()").value(0));
+	}
+
+	@Test
+	void should_allowRemovingReactionOnOwnComment_withoutError() throws Exception {
+		long id = createTask("T", member, false);
+		long comment = commentOk(id, memberToken, "x");
+
+		send(delete("/api/v1/tasks/" + id + "/comments/" + comment + "/reactions?emoji=👍"), memberToken, null)
+				.andExpect(status().isOk());
 	}
 
 	@Test

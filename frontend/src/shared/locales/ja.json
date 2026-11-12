@@ -56,7 +56,8 @@
     "INVALID_FILE": "このファイルは受け付けられません（種類または内容が不正）。",
     "FILE_TOO_LARGE": "ファイルが10MBを超えています。",
     "INVALID_EMOJI": "有効な絵文字ではありません。",
-    "TOO_MANY_REACTIONS": "このコメントにはリアクションの種類が多すぎます。"
+    "TOO_MANY_REACTIONS": "このコメントにはリアクションの種類が多すぎます。",
+    "SELF_REACTION": "自分のコメントにはリアクションできません。"
   },
   "nav": {
     "label": "メインナビゲーション",
@@ -199,6 +200,15 @@
     "edited": "編集済み",
     "commentDeleted": "このコメントは削除されました。",
     "addReaction": "リアクションを追加",
-    "moreEmoji": "もっと見る..."
+    "moreEmoji": "もっと見る...",
+    "like": "いいね",
+    "react": "リアクション",
+    "justNow": "たった今",
+    "writeComment": "コメントを書く...",
+    "writeReply": "{name}さんに返信...",
+    "viewReplies": "さらに{count}件の返信を表示",
+    "whoReacted": "リアクションした人",
+    "editHint": "Enterで保存 · Escでキャンセル",
+    "escToCancel": "Escでキャンセル ·"
   }
 }
