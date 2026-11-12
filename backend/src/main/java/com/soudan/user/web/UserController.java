@@ -39,6 +39,7 @@ public class UserController {
 	}
 
 	@GetMapping
+	@PreAuthorize("@accessPolicy.canReadUsers()")
 	public ApiResponse<PageResponse<UserResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "" + PageQuery.DEFAULT_SIZE) int size,
@@ -54,7 +55,24 @@ public class UserController {
 		return ApiResponse.ok(PageResponse.of(userService.search(query), mapper::toResponse));
 	}
 
+	/** Danh sách rút gọn để chọn người (thành viên nhóm...). Chỉ người đang hoạt động, chỉ id, tên, vị trí. */
+	@GetMapping("/options")
+	@PreAuthorize("@accessPolicy.canReadUsers()")
+	public ApiResponse<PageResponse<UserOptionResponse>> options(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "" + PageQuery.MAX_SIZE) int size,
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) String role) {
+		Map<String, String> filters = new HashMap<>();
+		filters.put("status", "ACTIVE");
+		putIfPresent(filters, "q", q);
+		putIfPresent(filters, "role", role);
+		PageQuery query = new PageQuery(page, size, "fullName", filters);
+		return ApiResponse.ok(PageResponse.of(userService.search(query), mapper::toOption));
+	}
+
 	@GetMapping("/{id}")
+	@PreAuthorize("@accessPolicy.canReadUsers()")
 	public ApiResponse<UserResponse> get(@PathVariable Long id) {
 		return ApiResponse.ok(mapper.toResponse(userService.get(id)));
 	}

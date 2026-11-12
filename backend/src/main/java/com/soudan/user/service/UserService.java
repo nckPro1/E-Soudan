@@ -1,5 +1,7 @@
 package com.soudan.user.service;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,6 +25,7 @@ import com.soudan.common.security.SystemRole;
 import com.soudan.user.UserAccount;
 import com.soudan.user.UserApi;
 import com.soudan.user.UserLockedEvent;
+import com.soudan.user.UserSummary;
 import com.soudan.user.domain.User;
 import com.soudan.user.domain.UserStatus;
 import com.soudan.user.repository.UserRepository;
@@ -146,6 +149,17 @@ public class UserService implements UserApi {
 	@Transactional(readOnly = true)
 	public Optional<UserAccount> findAccountById(Long id) {
 		return users.findById(id).map(UserService::toAccount);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<UserSummary> findSummariesByIds(Collection<Long> ids) {
+		if (ids.isEmpty()) {
+			return List.of();
+		}
+		return users.findAllById(ids).stream()
+				.map(u -> new UserSummary(u.getId(), u.getFullName(), u.getPosition(), u.getSystemRole(), u.isActive()))
+				.toList();
 	}
 
 	private User createInternal(CreateUserCommand command) {

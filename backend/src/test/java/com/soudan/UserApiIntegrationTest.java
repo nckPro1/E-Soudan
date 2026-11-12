@@ -29,15 +29,16 @@ class UserApiIntegrationTest extends IntegrationTestBase {
 
 	static Stream<Arguments> permissionTable() {
 		String[] roles = { "ADMIN", "MANAGER", "USER", "ANONYMOUS" };
-		// method, đường dẫn mẫu ({id} là tài khoản mục tiêu), body, status khi ADMIN gọi
+		// method, đường dẫn mẫu ({id} là tài khoản mục tiêu), body, status khi ADMIN gọi, Manager có được xem không
 		Object[][] endpoints = {
-				{ HttpMethod.GET, "/api/v1/users", null, 200 },
-				{ HttpMethod.GET, "/api/v1/users/{id}", null, 200 },
-				{ HttpMethod.POST, "/api/v1/users", CREATE_BODY, 201 },
-				{ HttpMethod.PUT, "/api/v1/users/{id}", "{\"fullName\":\"X\",\"position\":\"Y\",\"version\":0}", 200 },
-				{ HttpMethod.PUT, "/api/v1/users/{id}/role", "{\"systemRole\":\"MANAGER\",\"version\":0}", 200 },
-				{ HttpMethod.POST, "/api/v1/users/{id}/lock", null, 200 },
-				{ HttpMethod.POST, "/api/v1/users/{id}/unlock", null, 200 },
+				{ HttpMethod.GET, "/api/v1/users", null, 200, true },
+				{ HttpMethod.GET, "/api/v1/users/options", null, 200, true },
+				{ HttpMethod.GET, "/api/v1/users/{id}", null, 200, true },
+				{ HttpMethod.POST, "/api/v1/users", CREATE_BODY, 201, false },
+				{ HttpMethod.PUT, "/api/v1/users/{id}", "{\"fullName\":\"X\",\"position\":\"Y\",\"version\":0}", 200, false },
+				{ HttpMethod.PUT, "/api/v1/users/{id}/role", "{\"systemRole\":\"MANAGER\",\"version\":0}", 200, false },
+				{ HttpMethod.POST, "/api/v1/users/{id}/lock", null, 200, false },
+				{ HttpMethod.POST, "/api/v1/users/{id}/unlock", null, 200, false },
 		};
 		Stream.Builder<Arguments> rows = Stream.builder();
 		for (Object[] e : endpoints) {
@@ -45,6 +46,7 @@ class UserApiIntegrationTest extends IntegrationTestBase {
 				int expected = switch (role) {
 					case "ADMIN" -> (int) e[3];
 					case "ANONYMOUS" -> 401;
+					case "MANAGER" -> (boolean) e[4] ? (int) e[3] : 403;
 					default -> 403;
 				};
 				rows.add(Arguments.of(role, e[0], e[1], e[2], expected));
@@ -275,6 +277,12 @@ class UserApiIntegrationTest extends IntegrationTestBase {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.systemRole").value("USER"))
 				.andExpect(jsonPath("$.data.permissions.length()").value(0));
+
+		createUser("manager@example.com", SystemRole.MANAGER);
+		mockMvc.perform(get("/api/v1/me/permissions")
+				.header("Authorization", bearer(accessTokenOf("manager@example.com"))))
+				.andExpect(jsonPath("$.data.permissions.length()").value(1))
+				.andExpect(jsonPath("$.data.permissions[0]").value("USER_READ"));
 
 		mockMvc.perform(get("/api/v1/me/permissions")
 				.header("Authorization", bearer(accessTokenOf("admin@example.com"))))

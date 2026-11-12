@@ -82,3 +82,41 @@ Không sửa file migration sau khi đã chạy; muốn đổi thì thêm migrat
 3. **Một hay hai file migration?** Đề xuất: một file `V2` cho cả hai bảng (cùng thuộc stage auth).
 4. **Tên cột `position`**: PostgreSQL cho dùng (từ khoá không bị cấm), nhưng dễ nhầm với hàm `position()`. Đề xuất giữ `position` cho khớp `stage-1.md`; đổi sang `job_title` nếu bạn thích an toàn hơn.
 5. **`created_by` có khoá ngoại về `users` không?** Đề xuất: có, nullable. Lưu ý khi xoá cứng user phải xử lý; vì dùng xoá mềm nên ổn.
+
+---
+
+# Stage 2: `team`, `team_member` (`V3__create_team_and_member.sql`)
+
+## `team`
+
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| `id` | BIGINT identity | PK | |
+| `name` | VARCHAR(100) | NOT NULL | Duy nhất (không phân biệt hoa thường) **trong số nhóm ACTIVE** |
+| `description` | VARCHAR(500) | NULL | |
+| `status` | VARCHAR(20) | NOT NULL, CHECK ACTIVE/ARCHIVED | Lưu trữ thay cho xoá |
+| `created_at`, `created_by`, `updated_at`, `updated_by`, `version`, `deleted_at` | | | Cột chung như `users` |
+
+Chỉ mục: unique `lower(name)` với `status = 'ACTIVE' AND deleted_at IS NULL`.
+
+## `team_member`
+
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| `id` | BIGINT identity | PK | |
+| `team_id` | BIGINT | NOT NULL, FK → `team(id)` | |
+| `user_id` | BIGINT | NOT NULL, FK → `users(id)` | |
+| `team_role` | VARCHAR(20) | NOT NULL, CHECK LEADER/MEMBER/OBSERVER | |
+| `joined_at` | TIMESTAMPTZ | NOT NULL, mặc định `now()` | |
+
+Ràng buộc: `UNIQUE (team_id, user_id)`; chỉ mục theo `user_id` (tìm nhóm của một người).
+Không có audit/`version`/xoá mềm: mọi thay đổi thành viên đi qua `Team` và làm tăng `team.version`.
+
+## Quy tắc đã cài (domain `Team` + `TeamService`)
+
+- Nhóm có ít nhất một Leader; không xoá hoặc hạ vai Leader cuối cùng.
+- Leader/Member phải là `USER` đang ACTIVE; Observer phải là `MANAGER` đang ACTIVE; **ADMIN không tham gia nhóm**.
+- Một người có thể là Leader nhiều nhóm; không thêm trùng một người vào cùng nhóm.
+- Nhóm ARCHIVED không đổi được gì (thông tin, thành viên, vai trò).
+- Mọi thao tác thành viên tăng `team.version` (khoá lạc quan), nên hai người sửa cùng lúc thì người sau nhận 409.
+- `TeamRole` đặt ở `common.security` (cùng lý do với `SystemRole`): `AccessPolicy` cần dùng mà không được phụ thuộc ngược vào module `team`; `team` hiện thực cổng `TeamMembershipLookup`.
