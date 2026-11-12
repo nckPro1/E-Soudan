@@ -13,6 +13,9 @@ import TeamDetailView from './TeamDetailView.vue'
 
 vi.mock('../../auth/api')
 vi.mock('../api')
+vi.mock('../../task/api', () => ({
+  listTeamTasks: vi.fn().mockResolvedValue({ items: [], page: 0, size: 20, totalItems: 0, totalPages: 0 }),
+}))
 vi.mock('../../user/api', () => ({ listUserOptions: vi.fn().mockResolvedValue([]) }))
 
 const team = (overrides: Partial<TeamDetail> = {}): TeamDetail => ({
@@ -80,7 +83,7 @@ describe('TeamDetailView', () => {
   it('should_hideEditControls_when_notAdmin', async () => {
     const wrapper = await mountView('MANAGER', ['USER_READ'])
 
-    expect(wrapper.find('select').exists()).toBe(false)
+    expect(wrapper.find('select.role-select').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('Add member')
     expect(wrapper.text()).not.toContain('Archive team')
   })
@@ -90,7 +93,7 @@ describe('TeamDetailView', () => {
 
     expect(wrapper.text()).toContain('Add member')
     expect(wrapper.text()).toContain('Archive team')
-    expect(wrapper.findAll('select')).toHaveLength(3)
+    expect(wrapper.findAll('select.role-select')).toHaveLength(3)
   })
 
   it('should_hideEditControls_when_teamArchived', async () => {
@@ -98,15 +101,15 @@ describe('TeamDetailView', () => {
 
     expect(wrapper.text()).toContain('archived')
     expect(wrapper.text()).not.toContain('Add member')
-    expect(wrapper.find('select').exists()).toBe(false)
+    expect(wrapper.find('select.role-select').exists()).toBe(false)
   })
 
   it('should_onlyOfferLeaderOrMember_when_changingAMembersRole', async () => {
     const wrapper = await mountView('ADMIN', ['TEAM_MANAGE'])
 
-    const options = wrapper.findAll('select')[0].findAll('option').map((o) => o.text())
+    const options = wrapper.findAll('select.role-select')[0].findAll('option').map((o) => o.text())
     expect(options).toEqual(['Leader', 'Member'])
-    const observerOptions = wrapper.findAll('select')[2].findAll('option').map((o) => o.text())
+    const observerOptions = wrapper.findAll('select.role-select')[2].findAll('option').map((o) => o.text())
     expect(observerOptions).toEqual(['Observer (Manager)'])
   })
 
@@ -127,7 +130,7 @@ describe('TeamDetailView', () => {
     vi.mocked(teamApi.changeMemberRole).mockRejectedValue(new ApiError('LAST_LEADER_PROTECTED', 409, 'x'))
     const wrapper = await mountView('ADMIN', ['TEAM_MANAGE'])
 
-    const select = wrapper.findAll('select')[0]
+    const select = wrapper.findAll('select.role-select')[0]
     await select.setValue('MEMBER')
     await flushPromises()
 

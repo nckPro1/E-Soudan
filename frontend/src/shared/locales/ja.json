@@ -49,13 +49,19 @@
     "TEAM_ARCHIVED": "このチームはアーカイブ済みのため変更できません。",
     "LAST_LEADER_PROTECTED": "チームにはリーダーが最低1人必要です。",
     "ALREADY_TEAM_MEMBER": "この人は既にチームにいます。",
-    "INVALID_TEAM_MEMBER": "このアカウントはその役割に就けません（リーダーとメンバーは一般メンバー、オブザーバーはマネージャーで、有効なアカウントが必要です）。"
+    "INVALID_TEAM_MEMBER": "このアカウントはその役割に就けません（リーダーとメンバーは一般メンバー、オブザーバーはマネージャーで、有効なアカウントが必要です）。",
+    "INVALID_STATE_TRANSITION": "現在の状態ではこの操作はできません。",
+    "FILE_REQUIRED": "このタスクはレビュー前に1つ以上のファイル提出が必要です。",
+    "ASSIGNEE_NOT_IN_TEAM": "担当者はチームのメンバーである必要があります。",
+    "INVALID_FILE": "このファイルは受け付けられません（種類または内容が不正）。",
+    "FILE_TOO_LARGE": "ファイルが10MBを超えています。"
   },
   "nav": {
     "label": "メインナビゲーション",
     "home": "ホーム",
     "users": "アカウント",
-    "teams": "チーム"
+    "teams": "チーム",
+    "myTasks": "自分のタスク"
   },
   "common": {
     "cancel": "キャンセル",
@@ -65,7 +71,9 @@
     "loading": "読み込み中...",
     "prev": "前へ",
     "next": "次へ",
-    "pageOf": "{page} / {total} ページ"
+    "pageOf": "{page} / {total} ページ",
+    "yes": "はい",
+    "no": "いいえ"
   },
   "users": {
     "title": "アカウント管理",
@@ -131,6 +139,50 @@
     "statuses": {
       "ACTIVE": "有効",
       "ARCHIVED": "アーカイブ済み"
+    }
+  },
+  "task": {
+    "title": "タスク",
+    "myTasks": "自分のタスク",
+    "create": "タスクを割り当て",
+    "createTitle": "タスクを割り当て",
+    "editTitle": "タスク編集",
+    "titleLabel": "タイトル",
+    "assignee": "担当者",
+    "allAssignees": "すべての担当者",
+    "dueDate": "期限",
+    "priority": "優先度",
+    "requireFile": "レビュー前にファイル提出を必須にする",
+    "overdue": "期限切れ",
+    "empty": "タスクが見つかりません。",
+    "noAssignable": "このチームには割り当て可能なメンバーがいません。",
+    "assignedBy": "{name}さんが割り当て",
+    "start": "開始",
+    "uploadFile": "ファイル提出",
+    "submitForReview": "レビュー待ちにする",
+    "fileRequiredHint": "先にファイルを提出してください。",
+    "approve": "承認",
+    "approveConfirm": "このタスクを完了にしますか？",
+    "requestRevision": "差し戻し",
+    "revisionReason": "理由（必須）",
+    "sendBack": "差し戻す",
+    "revisionRequested": "差し戻し：",
+    "submissions": "提出ファイル",
+    "noSubmissions": "まだファイルが提出されていません。",
+    "history": "履歴",
+    "staleNotice": "他の人がこのタスクを変更しました。最新の内容を読み込みました。",
+    "fileTypeError": "PDF、Word、Excel、画像、zipファイルのみ受け付けます。",
+    "fileSizeError": "ファイルが10MBを超えています。",
+    "statuses": {
+      "ASSIGNED": "割り当て済み",
+      "IN_PROGRESS": "作業中",
+      "PENDING_REVIEW": "レビュー待ち",
+      "DONE": "完了"
+    },
+    "priorities": {
+      "LOW": "低",
+      "MEDIUM": "中",
+      "HIGH": "高"
     }
   }
 }

@@ -12,11 +12,12 @@ const { t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
-const { can } = usePermission()
+const { can, isAdmin } = usePermission()
 
 const navItems = computed(() =>
   [
     { name: 'home', path: '/', label: t('nav.home'), visible: true },
+    { name: 'my-tasks', path: '/tasks/mine', label: t('nav.myTasks'), visible: !isAdmin.value },
     { name: 'teams', path: '/teams', label: t('nav.teams'), visible: true },
     { name: 'users', path: '/users', label: t('nav.users'), visible: can('USER_READ') },
   ].filter((item) => item.visible),

@@ -49,13 +49,19 @@
     "TEAM_ARCHIVED": "This team is archived and cannot be changed.",
     "LAST_LEADER_PROTECTED": "A team must keep at least one Leader.",
     "ALREADY_TEAM_MEMBER": "This person is already in the team.",
-    "INVALID_TEAM_MEMBER": "This account cannot hold that role in a team (Leader and Member must be Members, Observer must be a Manager, and the account must be active)."
+    "INVALID_TEAM_MEMBER": "This account cannot hold that role in a team (Leader and Member must be Members, Observer must be a Manager, and the account must be active).",
+    "INVALID_STATE_TRANSITION": "This action is not allowed in the current status.",
+    "FILE_REQUIRED": "This task requires at least one file before review.",
+    "ASSIGNEE_NOT_IN_TEAM": "The assignee must be a Member of the team.",
+    "INVALID_FILE": "This file is not accepted (type or content not allowed).",
+    "FILE_TOO_LARGE": "The file is larger than 10 MB."
   },
   "nav": {
     "label": "Main navigation",
     "home": "Home",
     "users": "Accounts",
-    "teams": "Teams"
+    "teams": "Teams",
+    "myTasks": "My tasks"
   },
   "common": {
     "cancel": "Cancel",
@@ -65,7 +71,9 @@
     "loading": "Loading...",
     "prev": "Previous",
     "next": "Next",
-    "pageOf": "Page {page} of {total}"
+    "pageOf": "Page {page} of {total}",
+    "yes": "Yes",
+    "no": "No"
   },
   "users": {
     "title": "Account management",
@@ -131,6 +139,50 @@
     "statuses": {
       "ACTIVE": "Active",
       "ARCHIVED": "Archived"
+    }
+  },
+  "task": {
+    "title": "Tasks",
+    "myTasks": "My tasks",
+    "create": "Assign task",
+    "createTitle": "Assign task",
+    "editTitle": "Edit task",
+    "titleLabel": "Title",
+    "assignee": "Assignee",
+    "allAssignees": "All assignees",
+    "dueDate": "Due date",
+    "priority": "Priority",
+    "requireFile": "Require a file before review",
+    "overdue": "overdue",
+    "empty": "No tasks found.",
+    "noAssignable": "This team has no Member to assign tasks to.",
+    "assignedBy": "Assigned by {name}",
+    "start": "Start",
+    "uploadFile": "Upload file",
+    "submitForReview": "Mark as pending review",
+    "fileRequiredHint": "Upload a file first.",
+    "approve": "Approve",
+    "approveConfirm": "Mark this task as done?",
+    "requestRevision": "Send back",
+    "revisionReason": "Reason (required)",
+    "sendBack": "Send back",
+    "revisionRequested": "Sent back:",
+    "submissions": "Submitted files",
+    "noSubmissions": "No files submitted yet.",
+    "history": "History",
+    "staleNotice": "Someone just changed this task. The latest version has been loaded.",
+    "fileTypeError": "Only PDF, Word, Excel, image and zip files are accepted.",
+    "fileSizeError": "The file is larger than 10 MB.",
+    "statuses": {
+      "ASSIGNED": "Assigned",
+      "IN_PROGRESS": "In progress",
+      "PENDING_REVIEW": "Pending review",
+      "DONE": "Done"
+    },
+    "priorities": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
     }
   }
 }

@@ -49,13 +49,19 @@
     "TEAM_ARCHIVED": "Nhóm đã lưu trữ, không thể thay đổi.",
     "LAST_LEADER_PROTECTED": "Nhóm phải còn ít nhất một Leader.",
     "ALREADY_TEAM_MEMBER": "Người này đã có trong nhóm.",
-    "INVALID_TEAM_MEMBER": "Tài khoản này không giữ được vai trò đó (Leader và Thành viên phải là tài khoản Thành viên, Người quan sát phải là Quản lý, và tài khoản phải đang hoạt động)."
+    "INVALID_TEAM_MEMBER": "Tài khoản này không giữ được vai trò đó (Leader và Thành viên phải là tài khoản Thành viên, Người quan sát phải là Quản lý, và tài khoản phải đang hoạt động).",
+    "INVALID_STATE_TRANSITION": "Thao tác này không được phép ở trạng thái hiện tại.",
+    "FILE_REQUIRED": "Công việc này yêu cầu nộp ít nhất một file trước khi duyệt.",
+    "ASSIGNEE_NOT_IN_TEAM": "Người phụ trách phải là Thành viên của nhóm.",
+    "INVALID_FILE": "File không được chấp nhận (sai loại hoặc nội dung).",
+    "FILE_TOO_LARGE": "File lớn hơn 10 MB."
   },
   "nav": {
     "label": "Điều hướng chính",
     "home": "Trang chủ",
     "users": "Tài khoản",
-    "teams": "Nhóm"
+    "teams": "Nhóm",
+    "myTasks": "Việc của tôi"
   },
   "common": {
     "cancel": "Huỷ",
@@ -65,7 +71,9 @@
     "loading": "Đang tải...",
     "prev": "Trước",
     "next": "Sau",
-    "pageOf": "Trang {page} / {total}"
+    "pageOf": "Trang {page} / {total}",
+    "yes": "Có",
+    "no": "Không"
   },
   "users": {
     "title": "Quản lý tài khoản",
@@ -131,6 +139,50 @@
     "statuses": {
       "ACTIVE": "Đang hoạt động",
       "ARCHIVED": "Đã lưu trữ"
+    }
+  },
+  "task": {
+    "title": "Công việc",
+    "myTasks": "Việc của tôi",
+    "create": "Giao việc",
+    "createTitle": "Giao việc",
+    "editTitle": "Sửa công việc",
+    "titleLabel": "Tiêu đề",
+    "assignee": "Người phụ trách",
+    "allAssignees": "Mọi người phụ trách",
+    "dueDate": "Hạn chót",
+    "priority": "Ưu tiên",
+    "requireFile": "Yêu cầu nộp file trước khi duyệt",
+    "overdue": "quá hạn",
+    "empty": "Không có công việc nào.",
+    "noAssignable": "Nhóm này chưa có Thành viên để giao việc.",
+    "assignedBy": "Giao bởi {name}",
+    "start": "Bắt đầu",
+    "uploadFile": "Nộp file",
+    "submitForReview": "Đánh dấu chờ duyệt",
+    "fileRequiredHint": "Hãy nộp file trước.",
+    "approve": "Duyệt",
+    "approveConfirm": "Đánh dấu công việc này là hoàn thành?",
+    "requestRevision": "Trả lại",
+    "revisionReason": "Lý do (bắt buộc)",
+    "sendBack": "Trả lại",
+    "revisionRequested": "Đã trả lại:",
+    "submissions": "File đã nộp",
+    "noSubmissions": "Chưa có file nào được nộp.",
+    "history": "Lịch sử",
+    "staleNotice": "Có người vừa thay đổi công việc này. Đã tải lại bản mới nhất.",
+    "fileTypeError": "Chỉ nhận file PDF, Word, Excel, ảnh và zip.",
+    "fileSizeError": "File lớn hơn 10 MB.",
+    "statuses": {
+      "ASSIGNED": "Đã giao",
+      "IN_PROGRESS": "Đang làm",
+      "PENDING_REVIEW": "Chờ duyệt",
+      "DONE": "Hoàn thành"
+    },
+    "priorities": {
+      "LOW": "Thấp",
+      "MEDIUM": "Trung bình",
+      "HIGH": "Cao"
     }
   }
 }

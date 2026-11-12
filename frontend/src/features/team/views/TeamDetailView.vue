@@ -9,12 +9,15 @@ import { toApiError } from '../../../shared/api/http'
 import * as teamApi from '../api'
 import TeamFormDialog from '../components/TeamFormDialog.vue'
 import UserPicker from '../components/UserPicker.vue'
+import TeamTasks from '../../task/components/TeamTasks.vue'
+import { useAuthStore } from '../../auth/store'
 import type { TeamDetail, TeamMemberInfo, TeamRole } from '../types'
 
 const props = defineProps<{ id: number }>()
 
 const { t, te } = useI18n()
 const { can } = usePermission()
+const auth = useAuthStore()
 
 const team = ref<TeamDetail | null>(null)
 const loading = ref(true)
@@ -28,6 +31,11 @@ const addUser = ref<number[]>([])
 const removeTarget = ref<TeamMemberInfo | null>(null)
 const archiveOpen = ref(false)
 
+/** Leader của nhóm này (không phải Admin) mới giao được việc, và chỉ khi nhóm còn hoạt động. */
+const isLeader = computed(
+  () => team.value?.members.some((m) => m.userId === auth.user?.id && m.teamRole === 'LEADER') ?? false,
+)
+const canAssign = computed(() => isLeader.value && team.value?.status === 'ACTIVE')
 const canManage = computed(() => can('TEAM_MANAGE') && team.value?.status === 'ACTIVE')
 const existingIds = computed(() => team.value?.members.map((m) => m.userId) ?? [])
 const pickerRole = computed(() => (addRole.value === 'OBSERVER' ? 'MANAGER' : 'USER'))
@@ -247,6 +255,12 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
           </tbody>
         </table>
       </div>
+
+      <TeamTasks
+        :team-id="team.id"
+        :members="team.members"
+        :can-assign="canAssign"
+      />
     </template>
 
     <TeamFormDialog
