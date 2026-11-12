@@ -7,3 +7,12 @@ spring:
   mail:
     host: localhost
     port: 1025
+
+app:
+  jwt:
+    # Chỉ dùng cục bộ. Đặt JWT_SECRET (>= 32 ký tự) để thay thế.
+    secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+  bootstrap:
+    # Admin đầu tiên: đặt cả hai biến môi trường này trước khi chạy lần đầu.
+    admin-email: ${ADMIN_EMAIL:}
+    admin-temp-password: ${ADMIN_TEMP_PASSWORD:}

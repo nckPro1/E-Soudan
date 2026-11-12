@@ -1,1 +1,4 @@
 # Datasource do Testcontainers (@ServiceConnection) cấp.
+app:
+  jwt:
+    secret: test-only-secret-0123456789abcdef-0123456789

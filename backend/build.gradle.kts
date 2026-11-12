@@ -30,6 +30,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-websocket")
+	implementation("org.springframework.security:spring-security-oauth2-jose")
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.springframework.modulith:spring-modulith-observability-api")
 	implementation("org.springframework.modulith:spring-modulith-starter-core")

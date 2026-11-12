@@ -1,6 +1,10 @@
 spring:
   application:
     name: soudan
+  autoconfigure:
+    exclude:
+      # Không dùng tài khoản/mật khẩu mặc định do Boot sinh ra; xác thực do module auth đảm nhiệm.
+      - org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
   profiles:
     default: dev
   jpa:
@@ -17,6 +21,9 @@ spring:
 
 app:
   timezone: Asia/Ho_Chi_Minh
+  jwt:
+    access-ttl: 15m
+    refresh-ttl: 7d
 
 management:
   endpoints:

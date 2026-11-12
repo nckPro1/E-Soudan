@@ -32,6 +32,9 @@ Không cần cài Gradle hay PostgreSQL riêng: dùng `./gradlew` và Docker.
 docker compose up -d
 
 # 2. Backend (profile dev mặc định) — http://localhost:8080
+#    Lần đầu cần đặt Admin đầu tiên (tạo khi chưa có Admin nào; phải đổi mật khẩu khi đăng nhập lần đầu):
+#    bash:       export ADMIN_EMAIL=admin@soudan.local ADMIN_TEMP_PASSWORD='<mật khẩu tạm >= 8 ký tự>'
+#    PowerShell: $env:ADMIN_EMAIL='admin@soudan.local'; $env:ADMIN_TEMP_PASSWORD='<mật khẩu tạm>'
 cd backend
 ./gradlew bootRun
 
@@ -43,7 +46,8 @@ npm run dev
 
 Kiểm tra backend: `http://localhost:8080/actuator/health`.
 
-> Từ Stage 1 mọi endpoint (trừ `/auth/**`, health, OpenAPI) bị Security chặn mặc định.
+> Từ Stage 1 mọi endpoint (trừ `/auth/**`, health, OpenAPI) cần đăng nhập. Swagger UI: `http://localhost:8080/swagger-ui.html`
+> (bấm Authorize, dán access token lấy từ `POST /api/v1/auth/login`).
 
 ## 4. Chạy test
 
