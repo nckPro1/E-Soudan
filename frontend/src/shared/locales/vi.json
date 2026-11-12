@@ -1,5 +1,44 @@
 {
   "app": {
-    "title": "Soudan"
+    "name": "E-Soudan"
+  },
+  "footer": "© {year} E-Soudan. Bảo lưu mọi quyền.",
+  "auth": {
+    "signIn": "Đăng nhập",
+    "signInSub": "ログイン",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "show": "Hiện",
+    "hide": "Ẩn",
+    "signingIn": "Đang đăng nhập...",
+    "support": "Không đăng nhập được? Hãy liên hệ quản trị viên.",
+    "sessionExpired": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+    "useAnotherAccount": "Dùng tài khoản khác",
+    "signOut": "Đăng xuất"
+  },
+  "changePassword": {
+    "title": "Đổi mật khẩu",
+    "titleSub": "パスワード変更",
+    "required": "Bạn cần đổi mật khẩu tạm thời trước khi tiếp tục.",
+    "current": "Mật khẩu hiện tại",
+    "new": "Mật khẩu mới",
+    "confirm": "Nhập lại mật khẩu mới",
+    "hint": "Tối thiểu 8 ký tự.",
+    "mismatch": "Mật khẩu nhập lại không khớp.",
+    "submit": "Đổi mật khẩu",
+    "saving": "Đang lưu..."
+  },
+  "home": {
+    "welcome": "Xin chào, {name}",
+    "role": "Vai trò",
+    "position": "Vị trí"
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "Email hoặc mật khẩu không đúng.",
+    "ACCOUNT_LOCKED": "Tài khoản này đã bị khoá. Hãy liên hệ quản trị viên.",
+    "CURRENT_PASSWORD_INCORRECT": "Mật khẩu hiện tại không đúng.",
+    "VALIDATION_ERROR": "Vui lòng kiểm tra lại thông tin đã nhập.",
+    "NETWORK_ERROR": "Không kết nối được máy chủ. Kiểm tra mạng và thử lại.",
+    "UNKNOWN": "Đã xảy ra lỗi. Vui lòng thử lại."
   }
 }

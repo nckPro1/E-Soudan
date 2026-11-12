@@ -1,0 +1,44 @@
+{
+  "app": {
+    "name": "E-Soudan"
+  },
+  "footer": "© {year} E-Soudan. All rights reserved.",
+  "auth": {
+    "signIn": "Sign in",
+    "signInSub": "ログイン",
+    "email": "Email",
+    "password": "Password",
+    "show": "Show",
+    "hide": "Hide",
+    "signingIn": "Signing in...",
+    "support": "Cannot sign in? Please contact your administrator.",
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "useAnotherAccount": "Use a different account",
+    "signOut": "Sign out"
+  },
+  "changePassword": {
+    "title": "Change password",
+    "titleSub": "パスワード変更",
+    "required": "You must change your temporary password before continuing.",
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Confirm new password",
+    "hint": "At least 8 characters.",
+    "mismatch": "Passwords do not match.",
+    "submit": "Change password",
+    "saving": "Saving..."
+  },
+  "home": {
+    "welcome": "Welcome, {name}",
+    "role": "Role",
+    "position": "Position"
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "Email or password is incorrect.",
+    "ACCOUNT_LOCKED": "This account is locked. Please contact your administrator.",
+    "CURRENT_PASSWORD_INCORRECT": "Current password is incorrect.",
+    "VALIDATION_ERROR": "Please check the entered information.",
+    "NETWORK_ERROR": "Cannot reach the server. Check your connection and try again.",
+    "UNKNOWN": "Something went wrong. Please try again."
+  }
+}

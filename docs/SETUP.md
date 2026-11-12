@@ -14,7 +14,7 @@
 | MapStruct / springdoc | 1.6.3 / 3.2.0 |
 | PostgreSQL (dev, test) | 16 (Docker) |
 | Frontend | Vue 3 + Vite + TypeScript, Pinia, Vue Router, axios, vue-i18n, `@stomp/stompjs`, Vitest |
-| Thư viện UI | **PrimeVue** + `@primeuix/themes` (Aura, chỉnh màu chàm) + `primeicons`; cấu hình ở `frontend/src/app/plugins/primevue.ts` |
+| Thư viện UI | **PrimeVue 4.5.x** (MIT, ghim `~4.5.5`) + `@primeuix/themes ~2.0.3` + `primeicons`; cấu hình ở `frontend/src/app/plugins/primevue.ts`. **Không nâng lên PrimeVue 5**: bản 5 là giấy phép thương mại, cần khoá license, thiếu khoá thì hiện nhãn đỏ "Invalid PrimeUI License" (xem `node_modules/primevue/LICENSE.md`). |
 
 ## 2. Cần cài trên máy
 
@@ -95,3 +95,11 @@ Các package module hiện chỉ có `package-info.java`; code nghiệp vụ đ�
 - Tạo `BUSINESS_OVERVIEW.md` và `docs/erd.md` (Stage 1 cần ERD có bảng `users`).
 - Cân nhắc thêm CI (`.github/workflows/ci.yml`), `e2e/` (Playwright) và `CLAUDE.md`.
 - Nội dung thiết kế Stitch nằm ở `design/login`; `stage-1.md` nhắc `docs/design/` — hai chỗ này cần thống nhất.
+
+## 9. Lưu ý khi làm frontend
+
+- **Chữ Nhật/Việt:** font Noto Sans JP và Noto Serif JP tải từ Google Fonts (`index.html`), cần mạng khi chạy.
+- **Ngôn ngữ mặc định `vi`** (`frontend/src/app/plugins/i18n.ts`); người dùng đổi được ở góc trên phải, lựa chọn được nhớ trong `localStorage`.
+- **Phiên đăng nhập:** access token giữ trong bộ nhớ; refresh token lưu `localStorage` (backend trả qua JSON). Đây là đánh đổi chấp nhận được cho MVP; muốn chắc hơn thì chuyển sang cookie `HttpOnly` ở backend.
+- **Chuỗi i18n không được chứa ký tự `@`** (vue-i18n hiểu là cú pháp "linked message"); muốn hiện `@` dùng `{'@'}` hoặc để ngoài file ngôn ngữ.
+- **Windows:** nếu `npm run test` báo `Cannot read properties of undefined (reading 'config')` thì chạy từ PowerShell/cmd thay vì Git Bash (đã gặp trong môi trường tự động hoá; ở terminal thường chưa thấy).

@@ -1,4 +1,5 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw, type RouterHistory } from 'vue-router'
+import { installGuards } from './guards'
 import { authRoutes } from '../features/auth/routes'
 import { userRoutes } from '../features/user/routes'
 import { teamRoutes } from '../features/team/routes'
@@ -18,7 +19,9 @@ const routes: RouteRecordRaw[] = [
   ...notificationRoutes,
 ]
 
-export const router = createRouter({
-  history: createWebHistory(),
-  routes,
-})
+/** Tách thành hàm để test dùng history trong bộ nhớ. */
+export function createAppRouter(history: RouterHistory = createWebHistory()) {
+  const router = createRouter({ history, routes })
+  installGuards(router)
+  return router
+}

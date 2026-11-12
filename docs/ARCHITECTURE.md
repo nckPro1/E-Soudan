@@ -22,7 +22,7 @@
 | Xác thực | **[Mặc định]** JWT (access token ngắn hạn + refresh token) |
 | Build tool | **Gradle** (Kotlin DSL, dùng Gradle Wrapper) — chủ dự án đã chốt |
 | Ngôn ngữ frontend | **[Mặc định]** TypeScript |
-| Thư viện UI frontend | **PrimeVue** (theme Aura chỉnh theo design system) — chủ dự án đã chốt |
+| Thư viện UI frontend | **PrimeVue 4.5.x** (MIT; không dùng bản 5 vì thương mại) — chủ dự án đã chốt PrimeVue |
 | Kiểu khóa chính | **[Mặc định]** `BIGINT` identity |
 | Đa tenant | Không. Một công ty duy nhất. |
 
