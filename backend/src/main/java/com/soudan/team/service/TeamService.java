@@ -2,6 +2,7 @@ package com.soudan.team.service;
 
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +31,8 @@ import com.soudan.common.security.AuthenticatedUser;
 import com.soudan.common.security.CurrentUser;
 import com.soudan.common.security.SystemRole;
 import com.soudan.common.security.TeamRole;
+import com.soudan.team.TeamApi;
+import com.soudan.team.TeamInfo;
 import com.soudan.team.domain.Team;
 import com.soudan.team.domain.TeamMember;
 import com.soudan.team.domain.TeamStatus;
@@ -47,7 +50,7 @@ import jakarta.persistence.criteria.Subquery;
  */
 @Service
 @Transactional
-public class TeamService {
+public class TeamService implements TeamApi {
 
 	static final SearchWhitelist WHITELIST = new SearchWhitelist(
 			Map.of(
@@ -131,6 +134,17 @@ public class TeamService {
 		team.removeMember(userId);
 		teams.saveAndFlush(team);
 		return detail(team);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TeamInfo> findTeams(Collection<Long> ids) {
+		if (ids.isEmpty()) {
+			return List.of();
+		}
+		return teams.findAllById(ids).stream()
+				.map(t -> new TeamInfo(t.getId(), t.getName(), !t.isArchived()))
+				.toList();
 	}
 
 	@Transactional(readOnly = true)

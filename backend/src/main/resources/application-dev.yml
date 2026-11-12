@@ -9,6 +9,9 @@ spring:
     port: 1025
 
 app:
+  storage:
+    # File nộp lưu ngoài thư mục mã nguồn. Đặt STORAGE_DIR để đổi.
+    dir: ${STORAGE_DIR:${user.home}/.soudan/uploads}
   jwt:
     # Chỉ dùng cục bộ. Đặt JWT_SECRET (>= 32 ký tự) để thay thế.
     secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}

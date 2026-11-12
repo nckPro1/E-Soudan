@@ -1,5 +1,7 @@
 package com.soudan.common.search;
 
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -15,6 +17,7 @@ import com.soudan.common.api.PageQuery;
 import com.soudan.common.exception.ValidationException;
 import com.soudan.common.search.SearchWhitelist.FilterRule;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
@@ -70,12 +73,24 @@ public final class SearchSpecification {
 				if (rule.operator() == SearchWhitelist.Operator.CONTAINS) {
 					Expression<String> text = path.as(String.class);
 					predicates.add(cb.like(cb.lower(text), "%" + escapeLike(value.toLowerCase(Locale.ROOT)) + "%", '\\'));
+				} else if (rule.operator() == SearchWhitelist.Operator.AT_LEAST) {
+					predicates.add(compare(cb, path, convert(path.getJavaType(), value, field), true));
+				} else if (rule.operator() == SearchWhitelist.Operator.AT_MOST) {
+					predicates.add(compare(cb, path, convert(path.getJavaType(), value, field), false));
 				} else {
 					predicates.add(cb.equal(path, convert(path.getJavaType(), value, field)));
 				}
 			}
 			return cb.or(predicates.toArray(Predicate[]::new));
 		};
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static Predicate compare(CriteriaBuilder cb, Path<?> path, Object value, boolean atLeast) {
+		Expression<Comparable> expression = (Expression<Comparable>) (Expression) path;
+		return atLeast
+				? cb.greaterThanOrEqualTo(expression, (Comparable) value)
+				: cb.lessThanOrEqualTo(expression, (Comparable) value);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -90,7 +105,10 @@ public final class SearchSpecification {
 			if (type == Boolean.class || type == boolean.class) {
 				return Boolean.valueOf(value);
 			}
-		} catch (IllegalArgumentException e) {
+			if (type == LocalDate.class) {
+				return LocalDate.parse(value);
+			}
+		} catch (IllegalArgumentException | DateTimeException e) {
 			throw new ValidationException(ErrorCode.INVALID_FILTER, "Giá trị lọc không hợp lệ cho '" + field + "'");
 		}
 		return value;

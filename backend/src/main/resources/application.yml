@@ -15,11 +15,17 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
   flyway:
     enabled: true
     locations: classpath:db/migration
 
 app:
+  storage:
+    max-file-size: 10MB
   timezone: Asia/Ho_Chi_Minh
   jwt:
     access-ttl: 15m

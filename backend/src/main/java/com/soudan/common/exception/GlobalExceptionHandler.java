@@ -18,6 +18,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -62,6 +64,16 @@ public class GlobalExceptionHandler {
 			MethodArgumentTypeMismatchException.class })
 	ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception e) {
 		return build(ErrorCode.BAD_REQUEST, ErrorCode.BAD_REQUEST.defaultMessage(), null);
+	}
+
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	ResponseEntity<ApiResponse<Void>> handleTooLarge(MaxUploadSizeExceededException e) {
+		return build(ErrorCode.FILE_TOO_LARGE, ErrorCode.FILE_TOO_LARGE.defaultMessage(), null);
+	}
+
+	@ExceptionHandler(MultipartException.class)
+	ResponseEntity<ApiResponse<Void>> handleMultipart(MultipartException e) {
+		return build(ErrorCode.INVALID_FILE, ErrorCode.INVALID_FILE.defaultMessage(), null);
 	}
 
 	@ExceptionHandler(ObjectOptimisticLockingFailureException.class)

@@ -120,3 +120,42 @@ Không có audit/`version`/xoá mềm: mọi thay đổi thành viên đi qua `T
 - Nhóm ARCHIVED không đổi được gì (thông tin, thành viên, vai trò).
 - Mọi thao tác thành viên tăng `team.version` (khoá lạc quan), nên hai người sửa cùng lúc thì người sau nhận 409.
 - `TeamRole` đặt ở `common.security` (cùng lý do với `SystemRole`): `AccessPolicy` cần dùng mà không được phụ thuộc ngược vào module `team`; `team` hiện thực cổng `TeamMembershipLookup`.
+
+---
+
+# Stage 3: `task`, `task_history`, `task_submission` (`V4__create_task_tables.sql`)
+
+## `task`
+
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| `id` | BIGINT identity | PK | |
+| `team_id` | BIGINT | NOT NULL, FK → `team(id)` | |
+| `title` | VARCHAR(200) | NOT NULL | |
+| `description` | TEXT | NULL | |
+| `assignee_id` | BIGINT | NOT NULL, FK → `users(id)` | Phải là MEMBER của nhóm (kiểm tra ở service) |
+| `assigned_by` | BIGINT | NOT NULL, FK → `users(id)` | Leader giao việc |
+| `due_date` | DATE | NULL | |
+| `priority` | VARCHAR(20) | NOT NULL, CHECK LOW/MEDIUM/HIGH | |
+| `status` | VARCHAR(20) | NOT NULL, CHECK ASSIGNED/IN_PROGRESS/PENDING_REVIEW/DONE | Chỉ đổi qua máy trạng thái trong domain |
+| `require_file` | BOOLEAN | NOT NULL | Bắt buộc có file mới nộp duyệt được |
+| `revision_reason` | VARCHAR(1000) | NULL | Lý do lần trả lại gần nhất; xoá khi duyệt |
+| cột chung | | | `created_*`, `updated_*`, `version`, `deleted_at` như `users` |
+
+Chỉ mục: `(team_id, status)`, `assignee_id`.
+
+## `task_history` (chỉ thêm, không sửa)
+
+`id`, `task_id` (FK), `from_status` (NULL khi tạo), `to_status`, `changed_by` (FK), `changed_at`, `note` (lý do khi trả lại). Chỉ mục `(task_id, changed_at)`.
+
+## `task_submission`
+
+`id`, `task_id` (FK), `file_name` (đã làm sạch), `content_type` (suy từ đuôi file, không tin client), `size_bytes`, `storage_key` (UNIQUE, UUID do hệ thống sinh), `uploaded_by` (FK), `uploaded_at`.
+
+## Quyết định và quy tắc
+
+- **Không có trạng thái `NEEDS_REVISION`**: trả lại đưa task thẳng về `IN_PROGRESS`, kèm `revision_reason` và một dòng lịch sử có `note` (theo đề xuất của `stage-3.md` mục 3.3). Muốn có trạng thái riêng thì thêm migration.
+- Hành động đổi trạng thái đều nhận `version` trong body; lệch thì 409 `VERSION_CONFLICT`. Sai trạng thái thì 409 `INVALID_STATE_TRANSITION`. Không có API nào ghi trực tiếp `status`.
+- Ai làm gì: Leader của nhóm tạo, sửa, duyệt, trả lại; người phụ trách bắt đầu, nộp file, nộp duyệt; xem task và lịch sử: Admin và mọi người có mặt trong nhóm (kể cả Observer); **tải file: chỉ người phụ trách và Leader**.
+- File: PDF, Word, Excel, ảnh, zip, tối đa 10 MB; kiểm tra cả đuôi lẫn chữ ký đầu file; lưu bằng khoá UUID ngoài thư mục mã nguồn (`app.storage.dir`, dev: `~/.soudan/uploads`).
+- Tạo task cần nhóm ACTIVE. Task của nhóm đã lưu trữ vẫn đổi trạng thái được (chưa có yêu cầu chặn).

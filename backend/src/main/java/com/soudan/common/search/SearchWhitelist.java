@@ -17,13 +17,25 @@ public record SearchWhitelist(Map<String, FilterRule> filters, Set<String> sorta
 		/** So sánh bằng (kể cả enum). */
 		EQUALS,
 		/** Chứa chuỗi, không phân biệt hoa thường. Nhiều trường thì khớp một trong số đó. */
-		CONTAINS
+		CONTAINS,
+		/** Lớn hơn hoặc bằng (ngày, số). */
+		AT_LEAST,
+		/** Nhỏ hơn hoặc bằng (ngày, số). */
+		AT_MOST
 	}
 
 	public record FilterRule(List<String> fields, Operator operator) {
 
 		public static FilterRule equalsTo(String field) {
 			return new FilterRule(List.of(field), Operator.EQUALS);
+		}
+
+		public static FilterRule atLeast(String field) {
+			return new FilterRule(List.of(field), Operator.AT_LEAST);
+		}
+
+		public static FilterRule atMost(String field) {
+			return new FilterRule(List.of(field), Operator.AT_MOST);
 		}
 
 		public static FilterRule contains(String... fields) {
