@@ -183,6 +183,14 @@
       "LOW": "低",
       "MEDIUM": "中",
       "HIGH": "高"
-    }
+    },
+    "comments": "コメント",
+    "noComments": "コメントはまだありません。",
+    "addComment": "コメントを追加",
+    "commentPlaceholder": "コメントを入力...",
+    "sendComment": "コメントを投稿",
+    "deleteCommentTitle": "コメントを削除",
+    "deleteCommentConfirm": "このコメントを削除しますか？",
+    "commentDeleteFailed": "コメントを削除できませんでした。一覧を更新しました。"
   }
 }

@@ -25,6 +25,9 @@ public final class TaskViews {
 			String revisionReason, Long version, Instant createdAt, List<SubmissionView> submissions) {
 	}
 
+	public record CommentView(Long id, PersonView author, String body, Instant createdAt) {
+	}
+
 	public record HistoryView(Long id, TaskStatus fromStatus, TaskStatus toStatus, PersonView changedBy,
 			Instant changedAt, String note) {
 	}

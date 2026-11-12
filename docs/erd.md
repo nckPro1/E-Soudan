@@ -159,3 +159,11 @@ Chỉ mục: `(team_id, status)`, `assignee_id`.
 - Ai làm gì: Leader của nhóm tạo, sửa, duyệt, trả lại; người phụ trách bắt đầu, nộp file, nộp duyệt; xem task và lịch sử: Admin và mọi người có mặt trong nhóm (kể cả Observer); **tải file: chỉ người phụ trách và Leader**.
 - File: PDF, Word, Excel, ảnh, zip, tối đa 10 MB; kiểm tra cả đuôi lẫn chữ ký đầu file; lưu bằng khoá UUID ngoài thư mục mã nguồn (`app.storage.dir`, dev: `~/.soudan/uploads`).
 - Tạo task cần nhóm ACTIVE. Task của nhóm đã lưu trữ vẫn đổi trạng thái được (chưa có yêu cầu chặn).
+
+## `task_comment` (`V5__create_task_comment.sql`)
+
+`id`, `task_id` (FK), `author_id` (FK → `users`), `body` (VARCHAR 2000, văn bản thuần), cột chung (`created_*`, `updated_*`, `version`, `deleted_at`). Chỉ mục `(task_id, created_at)`.
+
+- Ai xem được task (Admin và mọi người có mặt trong nhóm) thì đọc và viết được bình luận; chỉ tác giả hoặc Leader của nhóm xoá được. Xoá là xoá mềm.
+- Không sửa bình luận (chưa có yêu cầu). Task đã DONE vẫn bình luận được.
+- Bình luận chưa gửi email.

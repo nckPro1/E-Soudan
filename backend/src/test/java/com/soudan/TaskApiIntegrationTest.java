@@ -1,6 +1,7 @@
 package com.soudan;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,16 +14,25 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import com.jayway.jsonpath.JsonPath;
 import com.soudan.common.security.SystemRole;
+import com.soudan.task.TaskAssignedEvent;
+import com.soudan.task.TaskSubmittedForReviewEvent;
 import com.soudan.user.domain.User;
 
+@RecordApplicationEvents
 class TaskApiIntegrationTest extends IntegrationTestBase {
+
+	@Autowired
+	private ApplicationEvents events;
 
 	private static final byte[] PDF = "%PDF-1.7 hello world".getBytes(StandardCharsets.US_ASCII);
 	private static final byte[] EXE = "MZ\u0090\u0000 not a pdf".getBytes(StandardCharsets.ISO_8859_1);
@@ -515,5 +525,162 @@ class TaskApiIntegrationTest extends IntegrationTestBase {
 				.andExpect(jsonPath("$.data.submissions.length()").value(1))
 				.andExpect(jsonPath("$.data.submissions[0].fileName").value("báo cáo.pdf"))
 				.andExpect(jsonPath("$.data.submissions[0].storageKey").doesNotExist());
+	}
+
+	// ---- sự kiện để gửi email ----
+
+	@Test
+	void should_publishAssignedEvent_when_taskCreated() throws Exception {
+		long id = createTask("Viết báo cáo", member, false);
+
+		var published = events.stream(TaskAssignedEvent.class).toList();
+		assertThat(published).hasSize(1);
+		assertThat(published.get(0).taskId()).isEqualTo(id);
+		assertThat(published.get(0).assigneeId()).isEqualTo(member.getId());
+		assertThat(published.get(0).assignedById()).isEqualTo(leaderA.getId());
+		assertThat(published.get(0).title()).isEqualTo("Viết báo cáo");
+	}
+
+	@Test
+	void should_publishAssignedEvent_onlyWhenAssigneeChanges() throws Exception {
+		long id = createTask("T", member, false);
+		events.clear();
+
+		send(put("/api/v1/tasks/" + id), leaderAToken,
+				taskBody("Đổi tiêu đề", member, false).replace("}", ",\"version\":" + versionOf(id) + "}"))
+				.andExpect(status().isOk());
+		assertThat(events.stream(TaskAssignedEvent.class).count()).isZero();
+
+		send(put("/api/v1/tasks/" + id), leaderAToken,
+				taskBody("Đổi tiêu đề", member2, false).replace("}", ",\"version\":" + versionOf(id) + "}"))
+				.andExpect(status().isOk());
+		var published = events.stream(TaskAssignedEvent.class).toList();
+		assertThat(published).hasSize(1);
+		assertThat(published.get(0).assigneeId()).isEqualTo(member2.getId());
+	}
+
+	@Test
+	void should_publishSubmittedEvent_onlyWhenSubmitSucceeds() throws Exception {
+		long id = startedTask(true);
+		events.clear();
+
+		act(id, "submit-for-review", memberToken).andExpect(status().isUnprocessableContent());
+		assertThat(events.stream(TaskSubmittedForReviewEvent.class).count()).isZero();
+
+		uploadOk(id, memberToken);
+		act(id, "submit-for-review", memberToken).andExpect(status().isOk());
+		var published = events.stream(TaskSubmittedForReviewEvent.class).toList();
+		assertThat(published).hasSize(1);
+		assertThat(published.get(0).taskId()).isEqualTo(id);
+		assertThat(published.get(0).teamId()).isEqualTo(teamA);
+		assertThat(published.get(0).assigneeId()).isEqualTo(member.getId());
+	}
+
+	@Test
+	void should_notPublishAssignedEvent_when_createRejected() throws Exception {
+		send(post("/api/v1/teams/" + teamA + "/tasks"), memberToken, taskBody("X", member, false))
+				.andExpect(status().isForbidden());
+		send(post("/api/v1/teams/" + teamA + "/tasks"), leaderAToken, taskBody("X", leaderB, false))
+				.andExpect(status().isUnprocessableContent());
+
+		assertThat(events.stream(TaskAssignedEvent.class).count()).isZero();
+	}
+
+	// ---- bình luận ----
+
+	private long commentOk(long taskId, String token, String text) throws Exception {
+		String json = send(post("/api/v1/tasks/" + taskId + "/comments"), token, "{\"body\":\"" + text + "\"}")
+				.andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+		return ((Number) JsonPath.read(json, "$.data.id")).longValue();
+	}
+
+	@Test
+	void should_addAndListComments_inOrder() throws Exception {
+		long id = createTask("T", member, false);
+
+		commentOk(id, memberToken, "Em bắt đầu làm");
+		send(post("/api/v1/tasks/" + id + "/comments"), leaderAToken, "{\"body\":\"  Ok, nhớ nộp file nhé  \"}")
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.data.author.id").value(leaderA.getId()))
+				.andExpect(jsonPath("$.data.body").value("Ok, nhớ nộp file nhé"));
+
+		send(get("/api/v1/tasks/" + id + "/comments"), managerToken, null)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.length()").value(2))
+				.andExpect(jsonPath("$.data[0].body").value("Em bắt đầu làm"))
+				.andExpect(jsonPath("$.data[0].author.fullName").exists())
+				.andExpect(jsonPath("$.data[1].author.id").value(leaderA.getId()));
+	}
+
+	@Test
+	void should_letEveryTeamPersonCommentAndRead_butNotOutsiders() throws Exception {
+		long id = createTask("T", member, false);
+
+		for (String token : new String[] { leaderAToken, memberToken, member2Token, managerToken, adminToken }) {
+			commentOk(id, token, "xin chào");
+			send(get("/api/v1/tasks/" + id + "/comments"), token, null).andExpect(status().isOk());
+		}
+		for (String token : new String[] { outsiderToken, leaderBToken }) {
+			send(get("/api/v1/tasks/" + id + "/comments"), token, null).andExpect(status().isForbidden());
+			send(post("/api/v1/tasks/" + id + "/comments"), token, "{\"body\":\"x\"}").andExpect(status().isForbidden());
+		}
+		mockMvc.perform(get("/api/v1/tasks/" + id + "/comments")).andExpect(status().isUnauthorized());
+		send(get("/api/v1/tasks/999999/comments"), leaderAToken, null).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void should_rejectBlankOrTooLongComment() throws Exception {
+		long id = createTask("T", member, false);
+		String url = "/api/v1/tasks/" + id + "/comments";
+
+		send(post(url), memberToken, "{\"body\":\"   \"}").andExpect(status().isUnprocessableContent());
+		send(post(url), memberToken, "{}").andExpect(status().isUnprocessableContent());
+		send(post(url), memberToken, "{\"body\":\"" + "a".repeat(2001) + "\"}").andExpect(status().isUnprocessableContent());
+		send(post(url), memberToken, "{\"body\":\"" + "a".repeat(2000) + "\"}").andExpect(status().isCreated());
+	}
+
+	@Test
+	void should_storeCommentAsPlainText_withoutInterpretingMarkup() throws Exception {
+		long id = createTask("T", member, false);
+
+		commentOk(id, memberToken, "<script>alert(1)</script>");
+
+		send(get("/api/v1/tasks/" + id + "/comments"), memberToken, null)
+				.andExpect(jsonPath("$.data[0].body").value("<script>alert(1)</script>"));
+	}
+
+	@Test
+	void should_letAuthorOrLeaderDeleteComment_butNotOthers() throws Exception {
+		long id = createTask("T", member, false);
+		long mine = commentOk(id, memberToken, "của member");
+		long theirs = commentOk(id, member2Token, "của member2");
+
+		send(delete("/api/v1/tasks/" + id + "/comments/" + theirs), memberToken, null).andExpect(status().isForbidden());
+		send(delete("/api/v1/tasks/" + id + "/comments/" + theirs), managerToken, null).andExpect(status().isForbidden());
+		send(delete("/api/v1/tasks/" + id + "/comments/" + theirs), outsiderToken, null).andExpect(status().isForbidden());
+
+		send(delete("/api/v1/tasks/" + id + "/comments/" + mine), memberToken, null).andExpect(status().isNoContent());
+		send(delete("/api/v1/tasks/" + id + "/comments/" + theirs), leaderAToken, null).andExpect(status().isNoContent());
+
+		send(get("/api/v1/tasks/" + id + "/comments"), memberToken, null).andExpect(jsonPath("$.data.length()").value(0));
+		send(delete("/api/v1/tasks/" + id + "/comments/" + mine), memberToken, null).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void should_notDeleteCommentOfAnotherTask() throws Exception {
+		long a = createTask("A", member, false);
+		long b = createTask("B", member2, false);
+		long comment = commentOk(a, memberToken, "x");
+
+		send(delete("/api/v1/tasks/" + b + "/comments/" + comment), leaderAToken, null).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void should_keepCommentingAllowed_afterTaskDone() throws Exception {
+		long id = startedTask(false);
+		act(id, "submit-for-review", memberToken).andExpect(status().isOk());
+		act(id, "approve", leaderAToken).andExpect(status().isOk());
+
+		commentOk(id, memberToken, "cảm ơn anh");
 	}
 }

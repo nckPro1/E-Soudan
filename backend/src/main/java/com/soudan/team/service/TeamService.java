@@ -147,6 +147,17 @@ public class TeamService implements TeamApi {
 				.toList();
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public List<Long> findLeaderIds(Long teamId) {
+		return teams.findById(teamId)
+				.map(t -> t.getMembers().stream()
+						.filter(m -> m.getTeamRole() == TeamRole.LEADER)
+						.map(TeamMember::getUserId)
+						.toList())
+				.orElse(List.of());
+	}
+
 	@Transactional(readOnly = true)
 	public TeamDetail get(Long id) {
 		return detail(teams.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy nhóm " + id)));

@@ -158,7 +158,7 @@ public class UserService implements UserApi {
 			return List.of();
 		}
 		return users.findAllById(ids).stream()
-				.map(u -> new UserSummary(u.getId(), u.getFullName(), u.getPosition(), u.getSystemRole(), u.isActive()))
+				.map(u -> new UserSummary(u.getId(), u.getFullName(), u.getEmail(), u.getPosition(), u.getSystemRole(), u.isActive()))
 				.toList();
 	}
 

@@ -19,11 +19,18 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 12MB
+  modulith:
+    events:
+      # Email gửi lỗi (ví dụ máy chủ mail tạm sập) được giữ lại và gửi lại khi khởi động lại ứng dụng.
+      republish-outstanding-events-on-restart: true
   flyway:
     enabled: true
     locations: classpath:db/migration
 
 app:
+  notification:
+    from: ${MAIL_FROM:no-reply@soudan.local}
+    frontend-url: ${FRONTEND_URL:http://localhost:5173}
   storage:
     max-file-size: 10MB
   timezone: Asia/Ho_Chi_Minh

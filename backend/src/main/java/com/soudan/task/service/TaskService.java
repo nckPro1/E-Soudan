@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -30,6 +31,8 @@ import com.soudan.common.security.AccessPolicy;
 import com.soudan.common.security.CurrentUser;
 import com.soudan.common.security.TeamMembershipLookup;
 import com.soudan.common.security.TeamRole;
+import com.soudan.task.TaskAssignedEvent;
+import com.soudan.task.TaskSubmittedForReviewEvent;
 import com.soudan.task.domain.Task;
 import com.soudan.task.domain.TaskHistory;
 import com.soudan.task.domain.TaskStatus;
@@ -74,10 +77,11 @@ public class TaskService {
 	private final AccessPolicy access;
 	private final CurrentUser currentUser;
 	private final Clock clock;
+	private final ApplicationEventPublisher events;
 
 	public TaskService(TaskRepository tasks, TaskHistoryRepository histories, TaskSubmissionRepository submissions,
 			TeamApi teams, UserApi users, TeamMembershipLookup memberships, AccessPolicy access,
-			CurrentUser currentUser, Clock clock) {
+			CurrentUser currentUser, Clock clock, ApplicationEventPublisher events) {
 		this.tasks = tasks;
 		this.histories = histories;
 		this.submissions = submissions;
@@ -87,6 +91,7 @@ public class TaskService {
 		this.access = access;
 		this.currentUser = currentUser;
 		this.clock = clock;
+		this.events = events;
 	}
 
 	// ---- ghi ----
@@ -105,6 +110,7 @@ public class TaskService {
 				command.dueDate(), command.priority(), command.requireFile());
 		tasks.saveAndFlush(task);
 		record(task, null, null);
+		publishAssigned(task);
 		return view(task);
 	}
 
@@ -114,9 +120,13 @@ public class TaskService {
 		requireLeader(task.getTeamId());
 		checkVersion(task, version);
 		requireAssigneeIsMember(task.getTeamId(), command.assigneeId());
+		Long previousAssignee = task.getAssigneeId();
 		task.update(command.title(), command.description(), command.assigneeId(), command.dueDate(),
 				command.priority(), command.requireFile());
 		tasks.saveAndFlush(task);
+		if (!previousAssignee.equals(task.getAssigneeId())) {
+			publishAssigned(task);
+		}
 		return view(task);
 	}
 
@@ -132,7 +142,10 @@ public class TaskService {
 		requireAssignee(task);
 		checkVersion(task, version);
 		boolean hasFile = submissions.existsByTaskId(id);
-		return transition(task, () -> task.submitForReview(hasFile), null);
+		TaskView result = transition(task, () -> task.submitForReview(hasFile), null);
+		events.publishEvent(new TaskSubmittedForReviewEvent(task.getId(), task.getTeamId(), task.getTitle(),
+				task.getAssigneeId()));
+		return result;
 	}
 
 	public TaskView approve(Long id, long version) {
@@ -210,6 +223,12 @@ public class TaskService {
 		tasks.saveAndFlush(task);
 		record(task, from, note);
 		return view(task);
+	}
+
+	/** Báo cho module khác (email...). Sự kiện chỉ được xử lý sau khi giao dịch này commit thành công. */
+	private void publishAssigned(Task task) {
+		events.publishEvent(new TaskAssignedEvent(task.getId(), task.getTeamId(), task.getTitle(),
+				task.getAssigneeId(), task.getAssignedBy(), task.getDueDate()));
 	}
 
 	private void record(Task task, TaskStatus from, String note) {

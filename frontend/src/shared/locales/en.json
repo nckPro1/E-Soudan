@@ -183,6 +183,14 @@
       "LOW": "Low",
       "MEDIUM": "Medium",
       "HIGH": "High"
-    }
+    },
+    "comments": "Comments",
+    "noComments": "No comments yet.",
+    "addComment": "Add a comment",
+    "commentPlaceholder": "Write a comment...",
+    "sendComment": "Post comment",
+    "deleteCommentTitle": "Delete comment",
+    "deleteCommentConfirm": "Delete this comment?",
+    "commentDeleteFailed": "Could not delete the comment. The list has been refreshed."
   }
 }

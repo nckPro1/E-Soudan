@@ -183,6 +183,14 @@
       "LOW": "Thấp",
       "MEDIUM": "Trung bình",
       "HIGH": "Cao"
-    }
+    },
+    "comments": "Bình luận",
+    "noComments": "Chưa có bình luận nào.",
+    "addComment": "Thêm bình luận",
+    "commentPlaceholder": "Viết bình luận...",
+    "sendComment": "Gửi bình luận",
+    "deleteCommentTitle": "Xoá bình luận",
+    "deleteCommentConfirm": "Xoá bình luận này?",
+    "commentDeleteFailed": "Không xoá được bình luận. Danh sách đã được tải lại."
   }
 }

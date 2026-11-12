@@ -1,7 +1,7 @@
 // Gọi API của feature task. Component chỉ gọi hàm ở đây, không gọi axios trực tiếp.
 import { http } from '../../shared/api/http'
 import type { ApiSuccess, PageResult } from '../../shared/types/api'
-import type { HistoryEntry, Submission, Task, TaskInput, TaskListQuery } from './types'
+import type { HistoryEntry, Submission, Task, TaskComment, TaskInput, TaskListQuery } from './types'
 
 function params(query: TaskListQuery): Record<string, string | number> {
   const result: Record<string, string | number> = { page: query.page, size: query.size }
@@ -67,4 +67,18 @@ export async function downloadSubmission(taskId: number, submissionId: number): 
     timeout: 60000,
   })
   return data
+}
+
+export async function listComments(taskId: number): Promise<TaskComment[]> {
+  const { data } = await http.get<ApiSuccess<TaskComment[]>>(`/tasks/${taskId}/comments`)
+  return data.data
+}
+
+export async function addComment(taskId: number, body: string): Promise<TaskComment> {
+  const { data } = await http.post<ApiSuccess<TaskComment>>(`/tasks/${taskId}/comments`, { body })
+  return data.data
+}
+
+export async function deleteComment(taskId: number, commentId: number): Promise<void> {
+  await http.delete(`/tasks/${taskId}/comments/${commentId}`)
 }

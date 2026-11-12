@@ -10,7 +10,7 @@ import { useAuthStore } from '../../auth/store'
 import * as teamApi from '../../team/api'
 import type { TeamDetail } from '../../team/types'
 import * as taskApi from '../api'
-import type { HistoryEntry, Task, TaskStatus } from '../types'
+import type { HistoryEntry, Task, TaskComment, TaskStatus } from '../types'
 import TaskDetailView from './TaskDetailView.vue'
 
 vi.mock('../../auth/api')
@@ -57,6 +57,8 @@ const history: HistoryEntry[] = [
   { id: 2, fromStatus: 'PENDING_REVIEW', toStatus: 'IN_PROGRESS', changedBy: { id: OTHER, fullName: 'Other' }, changedAt: '2026-01-02T00:00:00Z', note: 'Thiếu số liệu' },
 ]
 
+let comments: TaskComment[] = []
+
 async function mountView(myTeamRole: 'LEADER' | 'MEMBER' | 'OBSERVER' | null, current: Task) {
   vi.mocked(authApi.login).mockResolvedValue({
     accessToken: 'a',
@@ -79,6 +81,7 @@ async function mountView(myTeamRole: 'LEADER' | 'MEMBER' | 'OBSERVER' | null, cu
   vi.mocked(authApi.fetchPermissions).mockResolvedValue({ systemRole: 'USER', permissions: [] })
   vi.mocked(taskApi.getTask).mockResolvedValue(current)
   vi.mocked(taskApi.getHistory).mockResolvedValue(history)
+  vi.mocked(taskApi.listComments).mockResolvedValue(comments)
   vi.mocked(teamApi.getTeam).mockResolvedValue(team(myTeamRole))
   await useAuthStore().login('me@soudan.local', 'pw')
 
@@ -100,6 +103,92 @@ describe('TaskDetailView', () => {
     vi.resetAllMocks()
     setActivePinia(createPinia())
     document.body.innerHTML = ''
+    comments = []
+  })
+
+  const comment = (id: number, authorId: number, body: string): TaskComment => ({
+    id,
+    author: { id: authorId, fullName: authorId === ME ? 'Me' : 'Other' },
+    body,
+    createdAt: '2026-01-03T00:00:00Z',
+  })
+
+  it('should_listComments_whenOpened', async () => {
+    comments = [comment(1, OTHER, 'Nhớ nộp file nhé')]
+    const wrapper = await mountView('MEMBER', task())
+
+    expect(wrapper.text()).toContain('Comments (1)')
+    expect(wrapper.text()).toContain('Nhớ nộp file nhé')
+  })
+
+  it('should_showCommentAsPlainText_neverAsHtml', async () => {
+    comments = [comment(1, OTHER, '<img src=x onerror=alert(1)>')]
+    const wrapper = await mountView('MEMBER', task())
+
+    expect(wrapper.find('.comment-body').text()).toBe('<img src=x onerror=alert(1)>')
+    expect(wrapper.find('.comment-body img').exists()).toBe(false)
+  })
+
+  it('should_postComment_andAppendItWithoutReload', async () => {
+    vi.mocked(taskApi.addComment).mockResolvedValue(comment(5, ME, 'Em xong rồi'))
+    const wrapper = await mountView('MEMBER', task())
+
+    const area = wrapper.find('#new-comment')
+    await area.setValue('  Em xong rồi  ')
+    await wrapper.find('form.comment-form').trigger('submit')
+    await flushPromises()
+
+    expect(taskApi.addComment).toHaveBeenCalledWith(3, 'Em xong rồi')
+    expect(wrapper.text()).toContain('Em xong rồi')
+    expect((area.element as HTMLTextAreaElement).value).toBe('')
+  })
+
+  it('should_disableSend_whenCommentBlank', async () => {
+    const wrapper = await mountView('MEMBER', task())
+
+    expect(wrapper.find('form.comment-form button').attributes('disabled')).toBeDefined()
+    await wrapper.find('#new-comment').setValue('   ')
+    expect(wrapper.find('form.comment-form button').attributes('disabled')).toBeDefined()
+    await wrapper.find('#new-comment').setValue('ok')
+    expect(wrapper.find('form.comment-form button').attributes('disabled')).toBeUndefined()
+  })
+
+  it('should_offerDelete_onlyForOwnCommentsOrToLeader', async () => {
+    comments = [comment(1, ME, 'của tôi'), comment(2, OTHER, 'của người khác')]
+
+    const member = await mountView('MEMBER', task())
+    expect(member.findAll('.comments li')).toHaveLength(2)
+    expect(member.findAll('.comments li')[0].find('button.link').exists()).toBe(true)
+    expect(member.findAll('.comments li')[1].find('button.link').exists()).toBe(false)
+    member.unmount()
+
+    const leader = await mountView('LEADER', task({ assignee: { id: OTHER, fullName: 'Other' } }))
+    expect(leader.findAll('.comments li button.link')).toHaveLength(2)
+  })
+
+  it('should_removeComment_afterConfirm', async () => {
+    comments = [comment(1, ME, 'của tôi')]
+    vi.mocked(taskApi.deleteComment).mockResolvedValue()
+    const wrapper = await mountView('MEMBER', task())
+
+    await wrapper.find('.comments li button.link').trigger('click')
+    const confirm = Array.from(document.body.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Confirm')
+    confirm?.click()
+    await flushPromises()
+
+    expect(taskApi.deleteComment).toHaveBeenCalledWith(3, 1)
+    expect(wrapper.find('.comments li').exists()).toBe(false)
+  })
+
+  it('should_showError_whenPostingFails', async () => {
+    vi.mocked(taskApi.addComment).mockRejectedValue(new ApiError('FORBIDDEN', 403, 'x'))
+    const wrapper = await mountView('MEMBER', task())
+
+    await wrapper.find('#new-comment').setValue('hi')
+    await wrapper.find('form.comment-form').trigger('submit')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('You do not have permission to do this.')
   })
 
   it('should_showDetailAndHistoryTimeline_when_opened', async () => {
@@ -192,7 +281,7 @@ describe('TaskDetailView', () => {
     const send = Array.from(document.body.querySelectorAll('button')).filter((b) => b.textContent?.trim() === 'Send back').pop()!
     expect(send.disabled).toBe(true)
 
-    const area = document.body.querySelector('textarea')!
+    const area = document.body.querySelector<HTMLTextAreaElement>('#revision-reason')!
     area.value = 'Thiếu số liệu'
     area.dispatchEvent(new Event('input'))
     await flushPromises()

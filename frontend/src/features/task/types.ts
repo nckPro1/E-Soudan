@@ -58,3 +58,10 @@ export interface TaskListQuery {
   status?: TaskStatus | ''
   assigneeId?: number | ''
 }
+
+export interface TaskComment {
+  id: number
+  author: Person | null
+  body: string
+  createdAt: string
+}

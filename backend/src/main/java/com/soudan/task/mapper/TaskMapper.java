@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 
+import com.soudan.task.service.TaskViews.CommentView;
 import com.soudan.task.service.TaskViews.HistoryView;
 import com.soudan.task.service.TaskViews.SubmissionView;
 import com.soudan.task.service.TaskViews.TaskView;
+import com.soudan.task.web.CommentResponse;
 import com.soudan.task.web.HistoryResponse;
 import com.soudan.task.web.TaskResponse;
 import com.soudan.task.web.TaskResponse.SubmissionResponse;
@@ -21,4 +23,8 @@ public interface TaskMapper {
 	HistoryResponse toResponse(HistoryView view);
 
 	List<HistoryResponse> toHistory(List<HistoryView> views);
+
+	CommentResponse toResponse(CommentView view);
+
+	List<CommentResponse> toComments(List<CommentView> views);
 }

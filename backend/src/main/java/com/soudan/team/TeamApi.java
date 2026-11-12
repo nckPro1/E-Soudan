@@ -14,6 +14,9 @@ public interface TeamApi {
 	/** Tra nhiều nhóm một lượt. Id không tồn tại thì không có trong kết quả. */
 	List<TeamInfo> findTeams(Collection<Long> ids);
 
+	/** Id của các Leader trong nhóm (ví dụ để gửi thông báo cần duyệt). */
+	List<Long> findLeaderIds(Long teamId);
+
 	default Optional<TeamInfo> findTeam(Long id) {
 		return findTeams(List.of(id)).stream().findFirst();
 	}

@@ -103,3 +103,11 @@ Các package module hiện chỉ có `package-info.java`; code nghiệp vụ đ�
 - **Phiên đăng nhập:** access token giữ trong bộ nhớ; refresh token lưu `localStorage` (backend trả qua JSON). Đây là đánh đổi chấp nhận được cho MVP; muốn chắc hơn thì chuyển sang cookie `HttpOnly` ở backend.
 - **Chuỗi i18n không được chứa ký tự `@`** (vue-i18n hiểu là cú pháp "linked message"); muốn hiện `@` dùng `{'@'}` hoặc để ngoài file ngôn ngữ.
 - **Windows:** nếu `npm run test` báo `Cannot read properties of undefined (reading 'config')` thì chạy từ PowerShell/cmd thay vì Git Bash (đã gặp trong môi trường tự động hoá; ở terminal thường chưa thấy).
+
+## Email thông báo
+
+- Khi **task được giao** (tạo mới hoặc đổi người phụ trách) thì Member nhận email; khi **Member đánh dấu chờ duyệt** thì mọi Leader của nhóm nhận email. Nội dung tiếng Việt, kèm đường dẫn tới task.
+- Email gửi sau khi giao dịch đã commit, trên luồng riêng (`@ApplicationModuleListener`): lỗi gửi mail không làm hỏng thao tác của người dùng. Sự kiện gửi lỗi được giữ trong bảng `event_publication` và gửi lại khi khởi động lại ứng dụng.
+- Dev: mọi email đi vào **MailHog**, xem tại http://localhost:8025 (không gửi ra ngoài). Không có `spring.mail.host` thì chỉ ghi log.
+- Cấu hình: `MAIL_FROM` (người gửi), `FRONTEND_URL` (địa chỉ web dùng dựng link, mặc định `http://localhost:5173`); máy chủ SMTP thật qua `SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`.
+- Người dùng chưa có tuỳ chọn ngôn ngữ email hay tắt thông báo; làm sau nếu cần.
