@@ -58,7 +58,7 @@ async function mountView(role: SystemRole, permissions: string[], detail: TeamDe
 
   const i18n = createI18n({ legacy: false, locale: 'en', messages: { en } })
   const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/teams', name: 'teams', component: { render: () => null } }] })
-  const wrapper = mount(TeamDetailView, { props: { id: 7 }, global: { plugins: [i18n, router] }, attachTo: document.body })
+  const wrapper = mount(TeamDetailView, { props: { id: 7, tab: 'members' }, global: { plugins: [i18n, router] }, attachTo: document.body })
   await flushPromises()
   return wrapper
 }

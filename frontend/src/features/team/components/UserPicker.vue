@@ -61,124 +61,57 @@ watch(
 </script>
 
 <template>
-  <fieldset class="picker">
-    <legend class="label">
+  <fieldset class="picker m-0 border-0 p-0">
+    <legend class="label mb-1.5 p-0 text-[0.8125rem] font-medium">
       {{ label }}
       <span
         v-if="modelValue.length"
-        class="count"
+        class="count font-normal text-[#616161]"
       >({{ modelValue.length }})</span>
     </legend>
     <input
       v-model="filter"
       type="search"
-      class="filter"
+      class="filter control mb-1.5 !h-8 w-full !px-2.5"
       :placeholder="t('team.pickerSearch')"
       :aria-label="`${label} - ${t('team.pickerSearch')}`"
     >
-    <div class="list">
+    <div class="list max-h-36 overflow-y-auto rounded-md border border-[#e1dfdd] bg-white">
       <p
         v-if="loading"
-        class="note"
+        class="note p-2.5 text-xs text-[#616161]"
       >
         {{ t('common.loading') }}
       </p>
       <p
         v-else-if="failed"
-        class="note error"
+        class="note error p-2.5 text-xs text-[#c4314b]"
       >
         {{ t('errors.UNKNOWN') }}
       </p>
       <p
         v-else-if="visible().length === 0"
-        class="note"
+        class="note p-2.5 text-xs text-[#616161]"
       >
         {{ t('team.pickerEmpty') }}
       </p>
       <label
         v-for="option in visible()"
         :key="option.id"
-        class="row"
+        class="row flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-[0.8125rem] hover:bg-[#f5f5f5]"
       >
         <input
           :type="single ? 'radio' : 'checkbox'"
           :checked="modelValue.includes(option.id)"
+          class="accent-[#4f52b2]"
           @change="toggle(option.id)"
         >
         <span>{{ option.fullName }}</span>
         <span
           v-if="option.position"
-          class="pos"
+          class="pos text-xs text-[#616161]"
         >{{ option.position }}</span>
       </label>
     </div>
   </fieldset>
 </template>
-
-<style scoped>
-.picker {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.label {
-  padding: 0;
-  margin-bottom: 6px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.count {
-  color: var(--color-text-secondary);
-  font-weight: 400;
-}
-
-.filter {
-  width: 100%;
-  height: 32px;
-  padding: 0 10px;
-  margin-bottom: 6px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 13px;
-}
-
-.list {
-  max-height: 140px;
-  overflow-y: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.row:hover {
-  background: var(--color-surface-muted);
-}
-
-.pos {
-  color: var(--color-text-secondary);
-  font-size: 12px;
-}
-
-.note {
-  margin: 0;
-  padding: 10px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-.note.error {
-  color: var(--color-danger);
-}
-</style>

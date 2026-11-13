@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AlertBanner from '../../../shared/components/AlertBanner.vue'
 import ModalDialog from '../../../shared/components/ModalDialog.vue'
@@ -11,13 +11,56 @@ import TeamFormDialog from '../components/TeamFormDialog.vue'
 import UserPicker from '../components/UserPicker.vue'
 import TeamTasks from '../../task/components/TeamTasks.vue'
 import { useAuthStore } from '../../auth/store'
+import * as aiApi from '../../ai/api'
+import AiSummaryDialog from '../../ai/components/AiSummaryDialog.vue'
+import { useAiLang } from '../../ai/useAiCall'
+import ChatPane from '../../chat/components/ChatPane.vue'
+import { useChatStore } from '../../chat/store'
+import type { Conversation } from '../../chat/types'
+import { useProfileStore } from '../../people/profile'
 import type { TeamDetail, TeamMemberInfo, TeamRole } from '../types'
 
-const props = defineProps<{ id: number }>()
+type Tab = 'chat' | 'members' | 'tasks'
+
+/**
+ * Một nhóm, bố cục như Teams: tiêu đề + thao tác quản lý, rồi các tab Trò chuyện (phòng chat của nhóm, chỉ người không
+ * phải Admin), Thành viên, Công việc. Tab nằm trên đường dẫn (?tab=) để tải lại trang vẫn giữ nguyên.
+ */
+const props = defineProps<{ id: number; tab?: string }>()
 
 const { t, te } = useI18n()
-const { can } = usePermission()
+const { can, isAdmin } = usePermission()
 const auth = useAuthStore()
+const chat = useChatStore()
+const profile = useProfileStore()
+const router = useRouter()
+const aiSummary = ref(false)
+const aiLang = useAiLang()
+
+const tabs = computed<Tab[]>(() => (isAdmin.value ? ['members', 'tasks'] : ['chat', 'members', 'tasks']))
+const activeTab = computed<Tab>(() => {
+  const wanted = props.tab as Tab | undefined
+  return wanted && tabs.value.includes(wanted) ? wanted : tabs.value[0]
+})
+function selectTab(tab: Tab) {
+  void router.replace({ query: { tab } })
+}
+
+/** Phòng chat của nhóm: chỉ tải khi mở tab Trò chuyện lần đầu. */
+const room = ref<Conversation | null>(null)
+const roomError = ref('')
+watch(
+  activeTab,
+  async (tab) => {
+    if (tab !== 'chat' || room.value) return
+    try {
+      room.value = await chat.openTeamRoom(props.id)
+    } catch (error) {
+      roomError.value = toApiError(error).code
+    }
+  },
+  { immediate: true },
+)
 
 const team = ref<TeamDetail | null>(null)
 const loading = ref(true)
@@ -125,143 +168,233 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
 </script>
 
 <template>
-  <div>
-    <RouterLink
-      :to="{ name: 'teams' }"
-      class="back"
+  <div class="flex h-full min-h-0 flex-col">
+    <AlertBanner
+      v-if="errorMessage"
+      class="m-4"
     >
-      ← {{ t('team.title') }}
-    </RouterLink>
-
-    <AlertBanner v-if="errorMessage">
       {{ errorMessage }}
     </AlertBanner>
 
     <p
       v-if="loading"
-      class="muted"
+      class="muted p-6 text-[0.8125rem] text-[#616161]"
     >
       {{ t('common.loading') }}
     </p>
 
     <template v-else-if="team">
-      <div class="head">
-        <div>
-          <h1>{{ team.name }}</h1>
-          <p
-            v-if="team.description"
-            class="muted"
+      <header class="shrink-0 border-b border-[#e1dfdd] px-6 pt-3 max-md:px-3">
+        <div class="head flex items-center justify-between gap-3">
+          <div class="flex min-w-0 items-center gap-2">
+            <RouterLink
+              :to="{ name: 'teams' }"
+              class="back rounded p-1 text-[#616161] hover:bg-black/5 md:hidden"
+              :aria-label="t('team.title')"
+            >
+              ←
+            </RouterLink>
+            <div class="min-w-0">
+              <h1 class="truncate text-lg font-bold">
+                {{ team.name }}
+              </h1>
+              <p
+                v-if="team.description"
+                class="muted truncate text-xs text-[#616161]"
+              >
+                {{ team.description }}
+              </p>
+            </div>
+          </div>
+          <div class="head-actions flex shrink-0 items-center gap-2">
+            <button
+              v-if="activeTab === 'chat' && room"
+              type="button"
+              class="flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold text-[#4f52b2] hover:bg-[#4f52b2]/10"
+              :title="t('ai.summarizeShort')"
+              data-testid="ai-summary-button"
+              @click="aiSummary = true"
+            >
+              <span aria-hidden="true">✦</span>{{ t('ai.summarizeShort') }}
+            </button>
+            <span
+              class="badge"
+              :class="team.status === 'ARCHIVED' ? 'archived' : 'active badge-success'"
+            >{{ t(`team.statuses.${team.status}`) }}</span>
+            <template v-if="canManage">
+              <button
+                type="button"
+                class="btn"
+                @click="editing = true"
+              >
+                {{ t('common.edit') }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                @click="archiveOpen = true"
+              >
+                {{ t('team.archive') }}
+              </button>
+            </template>
+          </div>
+        </div>
+
+        <nav
+          class="mt-2 flex gap-4 text-[0.8125rem]"
+          role="tablist"
+        >
+          <button
+            v-for="tabName in tabs"
+            :key="tabName"
+            type="button"
+            role="tab"
+            class="-mb-px border-b-2 px-1 pb-2 pt-1 font-semibold"
+            :class="activeTab === tabName ? 'border-[#4f52b2] text-[#4f52b2]' : 'border-transparent text-[#616161] hover:text-[#242424]'"
+            :aria-selected="activeTab === tabName"
+            :data-testid="`tab-${tabName}`"
+            @click="selectTab(tabName)"
           >
-            {{ team.description }}
-          </p>
-        </div>
-        <div class="head-actions">
-          <span
-            class="badge"
-            :class="team.status === 'ARCHIVED' ? 'archived' : 'active'"
-          >{{ t(`team.statuses.${team.status}`) }}</span>
-          <template v-if="canManage">
-            <button
-              type="button"
-              class="btn secondary"
-              @click="editing = true"
-            >
-              {{ t('common.edit') }}
-            </button>
-            <button
-              type="button"
-              class="btn danger"
-              @click="archiveOpen = true"
-            >
-              {{ t('team.archive') }}
-            </button>
-          </template>
-        </div>
-      </div>
+            {{ t(`team.tab${tabName[0].toUpperCase()}${tabName.slice(1)}`) }}
+          </button>
+        </nav>
+      </header>
 
       <AlertBanner
         v-if="team.status === 'ARCHIVED'"
         tone="info"
+        class="mx-6 mt-3"
       >
         {{ t('team.archivedNotice') }}
       </AlertBanner>
 
-      <div class="section-head">
-        <h2>{{ t('team.members') }} ({{ team.members.length }})</h2>
-        <button
-          v-if="canManage"
-          type="button"
-          class="btn primary"
-          @click="openAdd"
+      <!-- Tab Trò chuyện: phòng chat của nhóm -->
+      <div
+        v-if="activeTab === 'chat'"
+        class="min-h-0 flex-1"
+        data-testid="team-chat"
+      >
+        <ChatPane
+          v-if="room"
+          :conversation="room"
+        />
+        <p
+          v-else-if="roomError"
+          class="p-6 text-sm text-[#c4314b]"
         >
-          {{ t('team.addMember') }}
-        </button>
+          {{ te(`errors.${roomError}`) ? t(`errors.${roomError}`) : t('errors.UNKNOWN') }}
+        </p>
+        <p
+          v-else
+          class="p-6 text-[0.8125rem] text-[#616161]"
+        >
+          {{ t('common.loading') }}
+        </p>
       </div>
 
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>{{ t('users.fullName') }}</th>
-              <th>{{ t('users.position') }}</th>
-              <th>{{ t('team.teamRole') }}</th>
-              <th v-if="canManage" />
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="member in team.members"
-              :key="member.userId"
+      <div
+        v-else
+        class="min-h-0 flex-1 overflow-auto px-6 py-4 max-md:px-3"
+      >
+        <template v-if="activeTab === 'members'">
+          <div class="section-head mb-3 flex items-center justify-between">
+            <h2 class="text-base font-bold">
+              {{ t('team.members') }} ({{ team.members.length }})
+            </h2>
+            <button
+              v-if="canManage"
+              type="button"
+              class="btn btn-primary"
+              @click="openAdd"
             >
-              <td>{{ member.fullName }}</td>
-              <td class="muted">
-                {{ member.position ?? '' }}
-              </td>
-              <td>
-                <select
-                  v-if="canManage"
-                  class="role-select"
-                  :value="member.teamRole"
-                  :disabled="acting"
-                  :aria-label="`${t('team.teamRole')} ${member.fullName}`"
-                  @change="changeRole(member, ($event.target as HTMLSelectElement).value as TeamRole)"
-                >
-                  <option
-                    v-for="role in assignable(member)"
-                    :key="role"
-                    :value="role"
-                  >
-                    {{ t(`team.roles.${role}`) }}
-                  </option>
-                </select>
-                <template v-else>
-                  {{ t(`team.roles.${member.teamRole}`) }}
-                </template>
-              </td>
-              <td
-                v-if="canManage"
-                class="right"
-              >
-                <button
-                  type="button"
-                  class="link danger"
-                  :disabled="acting"
-                  @click="removeTarget = member"
-                >
-                  {{ t('team.remove') }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              {{ t('team.addMember') }}
+            </button>
+          </div>
 
-      <TeamTasks
-        :team-id="team.id"
-        :members="team.members"
-        :can-assign="canAssign"
-      />
+          <div class="table-wrap">
+            <table class="table data-table">
+              <thead>
+                <tr>
+                  <th>{{ t('users.fullName') }}</th>
+                  <th>{{ t('users.position') }}</th>
+                  <th>{{ t('team.teamRole') }}</th>
+                  <th v-if="canManage" />
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="member in team.members"
+                  :key="member.userId"
+                >
+                  <td>
+                    <button
+                      type="button"
+                      class="link cursor-pointer"
+                      data-testid="member-name"
+                      @click="profile.open(member.userId)"
+                    >
+                      {{ member.fullName }}
+                    </button>
+                  </td>
+                  <td class="muted text-[0.8125rem] text-[#616161]">
+                    {{ member.position ?? '' }}
+                  </td>
+                  <td>
+                    <select
+                      v-if="canManage"
+                      class="role-select control !h-8"
+                      :value="member.teamRole"
+                      :disabled="acting"
+                      :aria-label="`${t('team.teamRole')} ${member.fullName}`"
+                      @change="changeRole(member, ($event.target as HTMLSelectElement).value as TeamRole)"
+                    >
+                      <option
+                        v-for="role in assignable(member)"
+                        :key="role"
+                        :value="role"
+                      >
+                        {{ t(`team.roles.${role}`) }}
+                      </option>
+                    </select>
+                    <template v-else>
+                      {{ t(`team.roles.${member.teamRole}`) }}
+                    </template>
+                  </td>
+                  <td
+                    v-if="canManage"
+                    class="right !text-right"
+                  >
+                    <button
+                      type="button"
+                      class="link danger cursor-pointer !text-[#c4314b]"
+                      :disabled="acting"
+                      @click="removeTarget = member"
+                    >
+                      {{ t('team.remove') }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
+
+        <template v-else>
+          <TeamTasks
+            :team-id="team.id"
+            :members="team.members"
+            :can-assign="canAssign"
+          />
+        </template>
+      </div>
     </template>
+
+    <AiSummaryDialog
+      v-if="aiSummary && room"
+      :title="`${t('ai.summarizeShort')}: ${team?.name ?? ''}`"
+      :call="() => aiApi.summarizeChat(room!.id, 24, aiLang)"
+      @close="aiSummary = false"
+    />
 
     <TeamFormDialog
       v-if="editing && team"
@@ -279,16 +412,16 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
       <AlertBanner v-if="errorMessage">
         {{ errorMessage }}
       </AlertBanner>
-      <div class="add-form">
+      <div class="add-form flex flex-col gap-4">
         <div>
           <label
             for="add-role"
-            class="label"
+            class="label field-label"
           >{{ t('team.teamRole') }}</label>
           <select
             id="add-role"
             v-model="addRole"
-            class="role-select full"
+            class="role-select control w-full"
             @change="addUser = []"
           >
             <option value="LEADER">
@@ -310,10 +443,10 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
           :excluded="existingIds"
           single
         />
-        <div class="buttons">
+        <div class="buttons mt-2 flex justify-end gap-2">
           <button
             type="button"
-            class="btn secondary"
+            class="btn"
             :disabled="acting"
             @click="adding = false"
           >
@@ -321,7 +454,7 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
           </button>
           <button
             type="button"
-            class="btn primary"
+            class="btn btn-primary"
             :disabled="acting || addUser.length === 0"
             @click="confirmAdd"
           >
@@ -336,13 +469,13 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
       :title="t('team.removeTitle')"
       @close="removeTarget = null"
     >
-      <p class="confirm-text">
+      <p class="confirm-text mb-4 text-sm">
         {{ t('team.removeConfirm', { name: removeTarget.fullName }) }}
       </p>
-      <div class="buttons">
+      <div class="buttons mt-2 flex justify-end gap-2">
         <button
           type="button"
-          class="btn secondary"
+          class="btn"
           :disabled="acting"
           @click="removeTarget = null"
         >
@@ -350,7 +483,7 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
         </button>
         <button
           type="button"
-          class="btn primary"
+          class="btn btn-primary"
           :disabled="acting"
           @click="confirmRemove"
         >
@@ -364,13 +497,13 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
       :title="t('team.archive')"
       @close="archiveOpen = false"
     >
-      <p class="confirm-text">
+      <p class="confirm-text mb-4 text-sm">
         {{ t('team.archiveConfirm', { name: team.name }) }}
       </p>
-      <div class="buttons">
+      <div class="buttons mt-2 flex justify-end gap-2">
         <button
           type="button"
-          class="btn secondary"
+          class="btn"
           :disabled="acting"
           @click="archiveOpen = false"
         >
@@ -378,7 +511,7 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
         </button>
         <button
           type="button"
-          class="btn primary"
+          class="btn btn-primary"
           :disabled="acting"
           @click="confirmArchive"
         >
@@ -388,210 +521,3 @@ const assignable = (member: TeamMemberInfo): TeamRole[] =>
     </ModalDialog>
   </div>
 </template>
-
-<style scoped>
-.back {
-  display: inline-block;
-  margin-bottom: 16px;
-  font-size: 13px;
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-.back:hover {
-  text-decoration: underline;
-}
-
-.head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.head-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-h1 {
-  margin: 0 0 4px;
-  font-family: var(--font-serif);
-  font-size: 20px;
-  font-weight: 500;
-}
-
-h2 {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.muted {
-  margin: 0;
-  font-size: 14px;
-  color: var(--color-text-secondary);
-}
-
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.table-wrap {
-  overflow-x: auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-th,
-td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
-  text-align: left;
-  white-space: nowrap;
-}
-
-th {
-  background: var(--color-surface-muted);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-}
-
-tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-.right {
-  text-align: right;
-}
-
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-}
-
-.badge.active {
-  border-color: var(--color-success);
-  color: var(--color-success);
-}
-
-.badge.archived {
-  color: var(--color-text-secondary);
-}
-
-.role-select {
-  height: 32px;
-  padding: 0 8px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 13px;
-  color: var(--color-text);
-}
-
-.role-select.full {
-  width: 100%;
-  height: 40px;
-  font-size: 14px;
-}
-
-.label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.add-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.link {
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 13px;
-  color: var(--color-primary);
-  cursor: pointer;
-}
-
-.link.danger {
-  color: var(--color-danger);
-}
-
-.link:hover:not(:disabled) {
-  text-decoration: underline;
-}
-
-.link:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn {
-  height: 36px;
-  padding: 0 16px;
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.primary {
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: #fff;
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.secondary {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
-
-.danger {
-  background: var(--color-surface);
-  border: 1px solid var(--color-danger);
-  color: var(--color-danger);
-}
-
-.confirm-text {
-  margin: 0 0 24px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-</style>

@@ -14,6 +14,12 @@ public interface TeamApi {
 	/** Tra nhiều nhóm một lượt. Id không tồn tại thì không có trong kết quả. */
 	List<TeamInfo> findTeams(Collection<Long> ids);
 
+	/** Id của mọi thành viên trong nhóm, gồm cả Leader và Observer (ví dụ để gửi tin vào phòng chat của nhóm). */
+	List<Long> findMemberIds(Long teamId);
+
+	/** Id các nhóm mà người này là thành viên (mọi vai trò trong nhóm). */
+	List<Long> findTeamIdsOf(Long userId);
+
 	/** Id của các Leader trong nhóm (ví dụ để gửi thông báo cần duyệt). */
 	List<Long> findLeaderIds(Long teamId);
 

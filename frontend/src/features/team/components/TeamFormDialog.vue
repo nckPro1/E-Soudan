@@ -78,7 +78,7 @@ async function submit() {
       {{ errorMessage }}
     </AlertBanner>
     <form
-      class="form"
+      class="form flex flex-col gap-4"
       @submit.prevent="submit"
     >
       <TextField
@@ -114,10 +114,10 @@ async function submit() {
           role="MANAGER"
         />
       </template>
-      <div class="buttons">
+      <div class="buttons mt-2 flex justify-end gap-2">
         <button
           type="button"
-          class="btn secondary"
+          class="btn"
           :disabled="saving"
           @click="emit('close')"
         >
@@ -125,7 +125,7 @@ async function submit() {
         </button>
         <button
           type="submit"
-          class="btn primary"
+          class="btn btn-primary"
           :disabled="saving"
         >
           {{ saving ? t('changePassword.saving') : t('common.save') }}
@@ -134,48 +134,3 @@ async function submit() {
     </form>
   </ModalDialog>
 </template>
-
-<style scoped>
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.btn {
-  height: 40px;
-  padding: 0 20px;
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.primary {
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: #fff;
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.secondary {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
-</style>

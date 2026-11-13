@@ -149,6 +149,20 @@ public class TeamService implements TeamApi {
 
 	@Override
 	@Transactional(readOnly = true)
+	public List<Long> findMemberIds(Long teamId) {
+		return teams.findById(teamId)
+				.map(t -> t.getMembers().stream().map(TeamMember::getUserId).toList())
+				.orElse(List.of());
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Long> findTeamIdsOf(Long userId) {
+		return teams.findTeamIdsByMember(userId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public List<Long> findLeaderIds(Long teamId) {
 		return teams.findById(teamId)
 				.map(t -> t.getMembers().stream()

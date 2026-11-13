@@ -1,5 +1,6 @@
 package com.soudan.team.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,8 @@ public interface TeamRepository extends JpaRepository<Team, Long>, JpaSpecificat
 	@Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
 	@Query("select t from Team t where t.id = :id")
 	Optional<Team> findByIdForUpdate(@Param("id") Long id);
+
+	/** Id các nhóm mà người này là thành viên (mọi vai trò). */
+	@Query("select m.team.id from TeamMember m where m.userId = :userId")
+	List<Long> findTeamIdsByMember(@Param("userId") Long userId);
 }

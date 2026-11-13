@@ -83,6 +83,23 @@ public class UserService implements UserApi {
 		return users.findAll(spec, SearchSpecification.pageable(query, WHITELIST, Sort.by(Sort.Direction.DESC, "createdAt")));
 	}
 
+	/** Danh bạ để tìm người nhắn tin: người đang hoạt động, trừ Admin. */
+	@Transactional(readOnly = true)
+	public java.util.List<User> searchPeople(String q, int size) {
+		String needle = q == null ? "" : q.strip().toLowerCase(java.util.Locale.ROOT);
+		return users.searchPeople(needle, org.springframework.data.domain.PageRequest.of(0, Math.min(Math.max(size, 1), 50)));
+	}
+
+	/** Hồ sơ một người để xem; Admin và tài khoản bị khoá coi như không tồn tại. */
+	@Transactional(readOnly = true)
+	public User getPerson(Long id) {
+		User user = get(id);
+		if (!user.isActive() || user.getSystemRole() == SystemRole.ADMIN) {
+			throw new NotFoundException("Không tìm thấy người dùng " + id);
+		}
+		return user;
+	}
+
 	@Transactional(readOnly = true)
 	public User get(Long id) {
 		return users.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản " + id));
