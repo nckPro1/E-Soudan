@@ -13,3 +13,6 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET}
+  storage:
+    # Bắt buộc: thư mục lưu file nộp, ngoài mã nguồn và không phải thư mục tạm; thiếu thì khởi động thất bại.
+    dir: ${STORAGE_DIR}
