@@ -163,3 +163,8 @@ AI_PROVIDER=local AI_MODEL=qwen2.5:7b AI_BASE_URL=http://localhost:11434 AI_TIME
 - Mô hình nhỏ trả lời chậm và kém hơn Claude, nhất là tiếng Việt và tiếng Nhật; giảm `AI_MAX_CONTEXT_CHARS` và tăng `AI_TIMEOUT`.
 - Muốn mô hình chạy trên GPU thì cần đủ VRAM (7B lượng tử hoá 4-bit cần khoảng 5 GB; thiếu thì Ollama chạy một phần trên CPU, chậm hơn).
 
+## Thư mục lưu file nộp
+
+- Dev: mặc định `~/.soudan/uploads`; đổi bằng `STORAGE_DIR`.
+- Prod: **bắt buộc** đặt `STORAGE_DIR` (thư mục ngoài mã nguồn, được sao lưu); thiếu thì ứng dụng không khởi động.
+- Test tự ghi vào `backend/build/test-uploads`.
