@@ -37,6 +37,8 @@ dependencies {
 	implementation("org.springframework.modulith:spring-modulith-starter-jpa")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 	implementation("org.mapstruct:mapstruct:$mapstructVersion")
+	// Lọc HTML của bài viết rich-text (chống XSS) trước khi lưu
+	implementation("com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20240325.1")
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("org.postgresql:postgresql")
 	runtimeOnly("org.springframework.modulith:spring-modulith-actuator")
