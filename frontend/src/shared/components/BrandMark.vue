@@ -5,46 +5,12 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="brand">
-    <!-- Con dấu hanko: ô vuông son, chữ 報 ("báo cáo") thay cho logo hình ảnh -->
+  <div class="brand flex items-center gap-3">
+    <!-- Con dấu: ô vuông tím, chữ 報 ("báo cáo") thay cho logo hình ảnh -->
     <span
-      class="seal"
+      class="seal flex h-9 w-9 shrink-0 select-none items-center justify-center rounded bg-[#4f52b2] text-xl font-bold leading-none text-white"
       aria-hidden="true"
     >報</span>
-    <span class="name">{{ t('app.name') }}</span>
+    <span class="name text-lg font-semibold tracking-wide text-[#242424]">{{ t('app.name') }}</span>
   </div>
 </template>
-
-<style scoped>
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.seal {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  background: var(--color-danger);
-  border: 1px solid var(--color-danger);
-  border-radius: 3px;
-  color: #fff;
-  font-family: var(--font-serif);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1;
-  user-select: none;
-}
-
-.name {
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--color-text);
-}
-</style>

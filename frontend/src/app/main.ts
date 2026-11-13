@@ -6,6 +6,7 @@ import { i18n } from './plugins/i18n'
 import { installPrimeVue } from './plugins/primevue'
 import { useAuthStore } from '../features/auth/store'
 import 'primeicons/primeicons.css'
+import '../shared/styles/tailwind.css'
 import '../shared/styles/tokens.css'
 import '../shared/styles/base.css'
 

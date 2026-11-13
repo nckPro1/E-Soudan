@@ -37,13 +37,13 @@ function onInput(event: Event) {
   <div class="field">
     <label
       :for="id"
-      class="label"
+      class="field-label"
     >{{ label }}</label>
-    <div class="control">
+    <div class="control-wrap relative flex items-center">
       <input
         :id="id"
-        class="input"
-        :class="{ invalid, padded: isPassword }"
+        class="input control !h-11 w-full !text-sm"
+        :class="[invalid ? '!border-b-2 !border-b-[#c4314b]' : '', isPassword ? 'padded pr-16' : '', { invalid }]"
         :type="inputType"
         :value="modelValue"
         :placeholder="placeholder"
@@ -57,7 +57,7 @@ function onInput(event: Event) {
       <button
         v-if="isPassword"
         type="button"
-        class="toggle"
+        class="toggle absolute right-3 cursor-pointer border-0 bg-transparent p-1 text-xs text-[#616161] hover:text-[#242424] disabled:cursor-not-allowed disabled:opacity-60"
         :disabled="disabled"
         @click="revealed = !revealed"
       >
@@ -66,82 +66,9 @@ function onInput(event: Event) {
     </div>
     <p
       v-if="hint"
-      class="hint"
+      class="hint mt-1.5 text-xs text-[#616161]"
     >
       {{ hint }}
     </p>
   </div>
 </template>
-
-<style scoped>
-.label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text);
-}
-
-.control {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input {
-  width: 100%;
-  height: 44px;
-  padding: 0 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  color: var(--color-text);
-  transition: border-color 0.15s;
-}
-
-.input.padded {
-  padding-right: 64px;
-}
-
-.input::placeholder {
-  color: var(--color-text-secondary);
-  opacity: 0.6;
-}
-
-.input.invalid {
-  border-bottom: 2px solid var(--color-danger);
-}
-
-.input:disabled {
-  background: var(--color-surface-muted);
-  opacity: 0.8;
-  cursor: not-allowed;
-}
-
-.toggle {
-  position: absolute;
-  right: 12px;
-  padding: 4px;
-  background: none;
-  border: 0;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-}
-
-.toggle:hover:not(:disabled) {
-  color: var(--color-text);
-}
-
-.toggle:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.hint {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-</style>

@@ -1,50 +1,21 @@
 <script setup lang="ts">
 /**
- * Thông báo trong thẻ, viền trái 3px: đỏ son cho lỗi, chàm cho thông tin trung tính (hết phiên).
+ * Thông báo trong thẻ, viền trái 3px: đỏ cho lỗi, tím chàm cho thông tin trung tính (hết phiên).
  */
 withDefaults(defineProps<{ tone?: 'error' | 'info' }>(), { tone: 'error' })
 </script>
 
 <template>
   <div
-    class="banner"
-    :class="tone"
+    class="banner mb-4 rounded border border-l-[3px] border-[#e1dfdd] bg-[#f5f5f5] p-3"
+    :class="tone === 'error' ? 'error !border-l-[#c4314b]' : 'info !border-l-[#4f52b2]'"
     role="alert"
   >
-    <p><slot /></p>
+    <p
+      class="text-xs leading-normal"
+      :class="tone === 'error' ? 'font-medium text-[#c4314b]' : 'text-[#242424]'"
+    >
+      <slot />
+    </p>
   </div>
 </template>
-
-<style scoped>
-.banner {
-  margin-bottom: 24px;
-  padding: 12px;
-  background: var(--color-surface-muted);
-  border: 1px solid var(--color-border);
-  border-left-width: 3px;
-  border-radius: var(--radius-sm);
-}
-
-.banner p {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.error {
-  border-left-color: var(--color-danger);
-}
-
-.error p {
-  color: var(--color-danger);
-  font-weight: 500;
-}
-
-.info {
-  border-left-color: var(--color-primary);
-}
-
-.info p {
-  color: var(--color-text);
-}
-</style>

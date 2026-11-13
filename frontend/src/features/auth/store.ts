@@ -143,6 +143,8 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   return {
+    /** Access token hiện tại (chỉ giữ trong bộ nhớ); dùng cho kết nối WebSocket, các lệnh REST đã được axios tự gắn. */
+    accessToken,
     user,
     permissions,
     initialized,

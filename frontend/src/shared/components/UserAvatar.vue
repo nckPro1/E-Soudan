@@ -11,22 +11,8 @@ const background = computed(() => colorOf(props.name))
 
 <template>
   <span
-    class="avatar"
-    :style="{ width: `${size}px`, height: `${size}px`, background, fontSize: `${Math.round(size * 0.44)}px` }"
+    class="avatar inline-flex shrink-0 select-none items-center justify-center rounded-full font-semibold leading-none text-white"
+    :style="{ width: `${size / 16}rem`, height: `${size / 16}rem`, background, fontSize: `${(size * 0.44) / 16}rem` }"
     aria-hidden="true"
   >{{ initial }}</span>
 </template>
-
-<style scoped>
-.avatar {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: #fff;
-  font-weight: 600;
-  line-height: 1;
-  user-select: none;
-}
-</style>

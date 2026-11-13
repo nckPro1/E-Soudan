@@ -7,6 +7,8 @@ import { taskRoutes } from '../features/task/routes'
 import { reportRoutes } from '../features/report/routes'
 import { chatRoutes } from '../features/chat/routes'
 import { notificationRoutes } from '../features/notification/routes'
+import { calendarRoutes } from '../features/calendar/routes'
+import { aiRoutes } from '../features/ai/routes'
 
 const routes: RouteRecordRaw[] = [
   ...authRoutes,
@@ -22,6 +24,8 @@ const routes: RouteRecordRaw[] = [
       ...reportRoutes,
       ...chatRoutes,
       ...notificationRoutes,
+      ...calendarRoutes,
+      ...aiRoutes,
     ],
   },
 ]

@@ -65,13 +65,13 @@ function useAnotherAccount() {
 <template>
   <AuthLayout>
     <h1
-      class="title"
-      :class="{ tight: hasBanner }"
+      class="title flex items-baseline gap-2 text-base font-medium"
+      :class="hasBanner ? 'tight mb-4' : 'mb-6'"
     >
       <span>{{ t('auth.signIn') }}</span>
       <span
         v-if="t('auth.signInSub')"
-        class="sub"
+        class="sub text-xs font-normal text-[#616161]"
       >{{ t('auth.signInSub') }}</span>
     </h1>
 
@@ -89,7 +89,7 @@ function useAnotherAccount() {
     </AlertBanner>
 
     <form
-      class="form"
+      class="form flex flex-col gap-6"
       @submit.prevent="submit"
     >
       <TextField
@@ -124,12 +124,14 @@ function useAnotherAccount() {
       </SubmitButton>
     </form>
 
-    <div class="support">
-      <p>{{ t('auth.support') }}</p>
+    <div class="support mt-6 text-center">
+      <p class="text-xs leading-relaxed text-[#616161]">
+        {{ t('auth.support') }}
+      </p>
       <button
         v-if="locked"
         type="button"
-        class="link"
+        class="link mt-2 cursor-pointer border-0 bg-transparent p-0 text-xs text-[#4f52b2] underline"
         @click="useAnotherAccount"
       >
         {{ t('auth.useAnotherAccount') }}
@@ -137,53 +139,3 @@ function useAnotherAccount() {
     </div>
   </AuthLayout>
 </template>
-
-<style scoped>
-.title {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 0 0 24px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.title.tight {
-  margin-bottom: 16px;
-}
-
-.sub {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--color-text-secondary);
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.support {
-  margin-top: 24px;
-  text-align: center;
-}
-
-.support p {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.625;
-  color: var(--color-text-secondary);
-}
-
-.link {
-  margin-top: 8px;
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 12px;
-  color: var(--color-primary);
-  text-decoration: underline;
-  cursor: pointer;
-}
-</style>

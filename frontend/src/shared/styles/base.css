@@ -10,11 +10,20 @@ body {
   padding: 0;
 }
 
+/*
+ * Cỡ chữ gốc 117%: ảnh thiết kế (design/homepage-assets/teams.png) là bản Teams phóng to khoảng 1,17 lần so với HTML
+ * Stitch. Mọi kích thước dùng rem nên cả giao diện co giãn theo, giữ đúng tỉ lệ với ảnh.
+ */
+html {
+  font-size: 117%;
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
-  line-height: 1.6;
+  font-size: 0.875rem;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -28,8 +37,12 @@ input {
   font-family: inherit;
 }
 
-/* Vòng focus dùng chung: 2px chàm, lệch ra ngoài 2px (design system, mục Elevation & Depth). */
-:focus-visible {
+/*
+ * Vòng focus cho nút, link... (bàn phím): 2px tím, lệch ra ngoài 2px.
+ * Ô nhập chữ (input, textarea, select, vùng soạn thảo) KHÔNG dùng vòng này: chúng tự đổi màu viền khi focus,
+ * nếu thêm vòng ngoài sẽ thành hai lớp viền đè lên nhau (trông như bị in đậm).
+ */
+:focus-visible:not(input, textarea, select, [contenteditable]) {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }

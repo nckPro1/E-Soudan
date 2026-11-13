@@ -1,199 +1,164 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import BrandMark from './BrandMark.vue'
-import LanguageSwitcher from './LanguageSwitcher.vue'
+import NavRail from './NavRail.vue'
+import UserMenu from './UserMenu.vue'
 import { useAuthStore } from '../../features/auth/store'
+import { useChatStore } from '../../features/chat/store'
+import ProfileCardHost from '../../features/people/ProfileCardHost.vue'
+import { useNotificationStore } from '../../features/notification/store'
+import { useCommunityStore } from '../../features/report/store'
 import { usePermission } from '../composables/usePermission'
 
-// Khung bố cục sau đăng nhập: header + thanh bên theo quyền. Mục menu chỉ là tiện lợi, quyền thật nằm ở backend.
+/**
+ * Khung ứng dụng. Markup lấy nguyên từ bản thiết kế Stitch (design/homepage-assets/teams.html): khối "TitleBar"
+ * (logo, lùi/tới, ô tìm kiếm ở giữa, tài khoản) và "BodyContainer" (thanh ứng dụng + khung nội dung).
+ * Bỏ phần giả lập cửa sổ Windows (hình nền, nút thu nhỏ/phóng to/đóng) vì đây là ứng dụng web chạy toàn màn hình.
+ * Trang có bố cục nhiều cột (route.meta.fullBleed) tự lo lề và cuộn.
+ */
 const { t } = useI18n()
 const auth = useAuthStore()
+const communities = useCommunityStore()
+const notifications = useNotificationStore()
+const chat = useChatStore()
+const { isAdmin } = usePermission()
 const router = useRouter()
 const route = useRoute()
-const { can, isAdmin } = usePermission()
 
-const navItems = computed(() =>
-  [
-    { name: 'home', path: '/', label: t('nav.home'), visible: true },
-    { name: 'my-tasks', path: '/tasks/mine', label: t('nav.myTasks'), visible: !isAdmin.value },
-    { name: 'teams', path: '/teams', label: t('nav.teams'), visible: true },
-    { name: 'users', path: '/users', label: t('nav.users'), visible: can('USER_READ') },
-  ].filter((item) => item.visible),
-)
+// Lùi/tới theo lịch sử trình duyệt; phụ thuộc route.fullPath để tính lại sau mỗi lần chuyển trang
+const canBack = computed(() => route.fullPath !== null && Boolean(window.history.state?.back))
+const canForward = computed(() => route.fullPath !== null && Boolean(window.history.state?.forward))
 
-/** Mục menu sáng khi đang ở trang đó hoặc trang con của nó (ví dụ /teams/3 sáng mục Nhóm). */
-function isActive(path: string): boolean {
-  return path === '/' ? route.path === '/' : route.path === path || route.path.startsWith(`${path}/`)
-}
+// Admin không có thông báo (không tham gia công việc hằng ngày) nên không cần hỏi định kỳ
+onMounted(() => {
+  if (!isAdmin.value) {
+    notifications.startPolling()
+    chat.start()
+  }
+})
+onBeforeUnmount(() => {
+  notifications.stopPolling()
+  chat.stop()
+})
 
 async function signOut() {
+  notifications.reset()
+  chat.reset()
   await auth.logout()
+  communities.reset() // danh sách cộng đồng thuộc về người vừa đăng xuất
   await router.replace({ name: 'login' })
 }
 </script>
 
 <template>
-  <div class="shell">
-    <header class="bar">
-      <BrandMark />
-      <div class="actions">
-        <LanguageSwitcher />
-        <span
-          v-if="auth.user"
-          class="who"
+  <div
+    class="relative w-full h-screen bg-[#f0f2f5] flex flex-col overflow-hidden text-[#242424]"
+    data-purpose="teams-app-window"
+  >
+    <!-- BEGIN: TitleBar (markup Stitch) -->
+    <header class="h-[2.75rem] bg-[#edebe9]/80 backdrop-blur-md flex items-center justify-between px-3 shrink-0 border-b border-[#e1dfdd] text-xs">
+      <!-- Left side controls / navigation -->
+      <div class="flex items-center space-x-3 w-1/4">
+        <div
+          class="w-6 h-6 flex items-center justify-center rounded bg-[#4f52b2] text-white font-bold text-xs shadow-sm"
+          aria-hidden="true"
         >
-          {{ auth.user.fullName }}
-          <span class="role">{{ auth.user.systemRole }}</span>
-        </span>
-        <button
-          type="button"
-          class="signout"
-          @click="signOut"
-        >
-          {{ t('auth.signOut') }}
-        </button>
+          報
+        </div>
+        <div class="flex items-center space-x-1 text-[#616161] max-md:hidden">
+          <button
+            type="button"
+            class="p-1 rounded hover:bg-black/5 hover:text-black disabled:opacity-40 disabled:cursor-default disabled:hover:bg-transparent"
+            :disabled="!canBack"
+            :aria-label="t('nav.back')"
+            data-testid="nav-back"
+            @click="router.back()"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            ><path
+              d="M15 19l-7-7 7-7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            /></svg>
+          </button>
+          <button
+            type="button"
+            class="p-1 rounded hover:bg-black/5 hover:text-black disabled:opacity-40 disabled:cursor-default disabled:hover:bg-transparent"
+            :disabled="!canForward"
+            :aria-label="t('nav.forward')"
+            data-testid="nav-forward"
+            @click="router.forward()"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            ><path
+              d="M9 5l7 7-7 7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            /></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Center Search Bar (tìm kiếm toàn ứng dụng chưa làm: giữ chỗ đúng thiết kế, tạm khoá) -->
+      <div
+        class="w-full max-w-[28.75rem] relative max-md:hidden"
+        :title="t('soon.badge')"
+      >
+        <div class="flex items-center bg-white rounded-md h-[1.75rem] px-2.5 shadow-sm border border-transparent focus-within:border-[#4f52b2] transition-colors">
+          <svg
+            class="w-3.5 h-3.5 text-[#616161] mr-2 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            />
+          </svg>
+          <input
+            class="w-full border-none p-0 text-xs text-[#242424] placeholder-[#707070] bg-transparent focus:ring-0 outline-none"
+            :placeholder="t('nav.search')"
+            :aria-label="t('nav.search')"
+            type="text"
+            disabled
+          >
+        </div>
+      </div>
+
+      <!-- Right side: tài khoản -->
+      <div class="flex items-center justify-end space-x-3 w-1/4">
+        <UserMenu @sign-out="signOut" />
       </div>
     </header>
+    <!-- END: TitleBar -->
 
-    <div class="frame">
-      <nav
-        class="side"
-        :aria-label="t('nav.label')"
+    <!-- BEGIN: BodyContainer (markup Stitch) -->
+    <div class="flex-1 flex overflow-hidden max-md:flex-col-reverse">
+      <NavRail />
+      <main
+        class="flex-1 min-w-0 bg-white"
+        :class="route.meta.fullBleed ? 'overflow-hidden' : 'overflow-auto px-7 py-6 max-md:p-4'"
       >
-        <RouterLink
-          v-for="item in navItems"
-          :key="item.name"
-          :to="{ name: item.name }"
-          class="link"
-          :class="{ active: isActive(item.path) }"
-        >
-          {{ item.label }}
-        </RouterLink>
-      </nav>
-      <main class="content">
         <RouterView />
       </main>
     </div>
+    <!-- END: BodyContainer -->
+
+    <!-- Thẻ hồ sơ một người, mở từ tên/ảnh đại diện ở bất kỳ đâu -->
+    <ProfileCardHost />
   </div>
 </template>
-
-<style scoped>
-.shell {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 32px;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.who {
-  font-size: 13px;
-}
-
-.role {
-  margin-left: 8px;
-  padding: 2px 6px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  color: var(--color-text-secondary);
-}
-
-.signout {
-  height: 32px;
-  padding: 0 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 13px;
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-.signout:hover {
-  background: #f0ede4;
-}
-
-.frame {
-  display: flex;
-  flex: 1;
-}
-
-.side {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex-shrink: 0;
-  width: 200px;
-  padding: 16px 12px;
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
-}
-
-.link {
-  padding: 8px 12px;
-  border-left: 3px solid transparent;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.link:hover {
-  background: var(--color-surface-muted);
-}
-
-.link.active {
-  border-left-color: var(--color-primary);
-  background: var(--color-surface-muted);
-  color: var(--color-primary);
-  font-weight: 500;
-}
-
-.content {
-  flex: 1;
-  min-width: 0;
-  padding: 32px;
-}
-
-@media (max-width: 720px) {
-  .frame {
-    flex-direction: column;
-  }
-
-  .side {
-    flex-direction: row;
-    width: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border);
-    overflow-x: auto;
-  }
-
-  .bar {
-    padding: 12px 16px;
-  }
-
-  .who {
-    display: none;
-  }
-
-  .content {
-    padding: 16px;
-  }
-}
-</style>

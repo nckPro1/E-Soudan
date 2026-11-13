@@ -74,7 +74,7 @@ async function submit() {
       {{ errorMessage }}
     </AlertBanner>
     <form
-      class="form"
+      class="form flex flex-col gap-4"
       @submit.prevent="submit"
     >
       <TextField
@@ -115,12 +115,12 @@ async function submit() {
       <div class="field">
         <label
           for="user-role"
-          class="label"
+          class="label field-label"
         >{{ t('users.role') }}</label>
         <select
           id="user-role"
           v-model="role"
-          class="select"
+          class="select control w-full"
           :disabled="saving || roleLocked"
         >
           <option value="USER">
@@ -132,15 +132,15 @@ async function submit() {
         </select>
         <p
           v-if="roleLocked"
-          class="hint"
+          class="hint mt-1.5 text-xs text-[#616161]"
         >
           {{ t('users.adminRoleFixed') }}
         </p>
       </div>
-      <div class="buttons">
+      <div class="buttons mt-2 flex justify-end gap-2">
         <button
           type="button"
-          class="btn secondary"
+          class="btn"
           :disabled="saving"
           @click="emit('close')"
         >
@@ -148,7 +148,7 @@ async function submit() {
         </button>
         <button
           type="submit"
-          class="btn primary"
+          class="btn btn-primary"
           :disabled="saving"
         >
           {{ saving ? t('changePassword.saving') : t('common.save') }}
@@ -157,72 +157,3 @@ async function submit() {
     </form>
   </ModalDialog>
 </template>
-
-<style scoped>
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.select {
-  width: 100%;
-  height: 44px;
-  padding: 0 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  color: var(--color-text);
-}
-
-.hint {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-.buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.btn {
-  height: 40px;
-  padding: 0 20px;
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.primary {
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: #fff;
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.secondary {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
-</style>

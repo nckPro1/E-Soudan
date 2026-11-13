@@ -115,23 +115,25 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
 
 <template>
   <div>
-    <div class="head">
-      <h1>{{ t('users.title') }}</h1>
+    <div class="head mb-6 flex items-center justify-between">
+      <h1 class="page-title">
+        {{ t('users.title') }}
+      </h1>
       <button
         v-if="can('USER_CREATE')"
         type="button"
-        class="btn primary"
+        class="btn btn-primary"
         @click="openCreate"
       >
         {{ t('users.create') }}
       </button>
     </div>
 
-    <div class="filters">
+    <div class="filters mb-4 flex flex-wrap gap-3">
       <input
         v-model="search"
         type="search"
-        class="control search"
+        class="control search min-w-[12.5rem] max-w-[22.5rem] flex-1"
         :placeholder="t('users.searchPlaceholder')"
         :aria-label="t('users.searchPlaceholder')"
       >
@@ -175,7 +177,7 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
     </AlertBanner>
 
     <div class="table-wrap">
-      <table class="table">
+      <table class="table data-table">
         <thead>
           <tr>
             <th>{{ t('users.fullName') }}</th>
@@ -183,7 +185,7 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
             <th>{{ t('users.position') }}</th>
             <th>{{ t('users.role') }}</th>
             <th>{{ t('users.status') }}</th>
-            <th class="right">
+            <th class="right !text-right">
               {{ t('users.actions') }}
             </th>
           </tr>
@@ -200,14 +202,14 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
             <td>
               <span
                 class="badge"
-                :class="user.status === 'LOCKED' ? 'locked' : 'active'"
+                :class="user.status === 'LOCKED' ? 'locked badge-danger' : 'active badge-success'"
               >{{ t(`users.statuses.${user.status}`) }}</span>
             </td>
-            <td class="right">
+            <td class="right !text-right">
               <button
                 v-if="can('USER_UPDATE')"
                 type="button"
-                class="link"
+                class="link ml-3 cursor-pointer"
                 @click="openEdit(user)"
               >
                 {{ t('common.edit') }}
@@ -215,7 +217,7 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
               <button
                 v-if="can('USER_LOCK') && user.status === 'ACTIVE' && !isSelf(user)"
                 type="button"
-                class="link danger"
+                class="link danger ml-3 cursor-pointer !text-[#c4314b]"
                 @click="confirmTarget = { user, lock: true }"
               >
                 {{ t('users.lock') }}
@@ -223,7 +225,7 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
               <button
                 v-if="can('USER_LOCK') && user.status === 'LOCKED'"
                 type="button"
-                class="link"
+                class="link ml-3 cursor-pointer"
                 @click="confirmTarget = { user, lock: false }"
               >
                 {{ t('users.unlock') }}
@@ -233,7 +235,7 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
           <tr v-if="!loading && result && result.items.length === 0">
             <td
               colspan="6"
-              class="empty"
+              class="empty empty-cell"
             >
               {{ t('users.empty') }}
             </td>
@@ -241,7 +243,7 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
           <tr v-if="loading && !result">
             <td
               colspan="6"
-              class="empty"
+              class="empty empty-cell"
             >
               {{ t('common.loading') }}
             </td>
@@ -252,11 +254,11 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
 
     <div
       v-if="result && result.totalPages > 1"
-      class="pager"
+      class="pager mt-4 flex items-center justify-center gap-4 text-[0.8125rem]"
     >
       <button
         type="button"
-        class="btn secondary"
+        class="btn"
         :disabled="page === 0 || loading"
         @click="goTo(page - 1)"
       >
@@ -265,7 +267,7 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
       <span>{{ t('common.pageOf', { page: page + 1, total: result.totalPages }) }}</span>
       <button
         type="button"
-        class="btn secondary"
+        class="btn"
         :disabled="page + 1 >= result.totalPages || loading"
         @click="goTo(page + 1)"
       >
@@ -285,13 +287,13 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
       :title="confirmTarget.lock ? t('users.lockTitle') : t('users.unlockTitle')"
       @close="confirmTarget = null"
     >
-      <p class="confirm-text">
+      <p class="confirm-text mb-4 text-sm">
         {{ t(confirmTarget.lock ? 'users.lockConfirm' : 'users.unlockConfirm', { name: confirmTarget.user.fullName }) }}
       </p>
-      <div class="buttons">
+      <div class="buttons mt-2 flex justify-end gap-2">
         <button
           type="button"
-          class="btn secondary"
+          class="btn"
           :disabled="acting"
           @click="confirmTarget = null"
         >
@@ -299,7 +301,7 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
         </button>
         <button
           type="button"
-          class="btn primary"
+          class="btn btn-primary"
           :disabled="acting"
           @click="runConfirmed"
         >
@@ -309,171 +311,3 @@ const isSelf = (user: ManagedUser) => user.id === auth.user?.id
     </ModalDialog>
   </div>
 </template>
-
-<style scoped>
-.head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-h1 {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: 20px;
-  font-weight: 500;
-}
-
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.control {
-  height: 36px;
-  padding: 0 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  color: var(--color-text);
-}
-
-.search {
-  flex: 1;
-  min-width: 200px;
-  max-width: 360px;
-}
-
-.table-wrap {
-  overflow-x: auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-th,
-td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
-  text-align: left;
-  white-space: nowrap;
-}
-
-th {
-  background: var(--color-surface-muted);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-}
-
-tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-.right {
-  text-align: right;
-}
-
-.empty {
-  padding: 32px;
-  text-align: center;
-  color: var(--color-text-secondary);
-}
-
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-}
-
-.badge.active {
-  border-color: var(--color-success);
-  color: var(--color-success);
-}
-
-.badge.locked {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-}
-
-.link {
-  margin-left: 12px;
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 13px;
-  color: var(--color-primary);
-  cursor: pointer;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
-.link.danger {
-  color: var(--color-danger);
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 16px;
-  font-size: 13px;
-}
-
-.btn {
-  height: 36px;
-  padding: 0 16px;
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.primary {
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: #fff;
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.secondary {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
-
-.confirm-text {
-  margin: 0 0 24px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-</style>

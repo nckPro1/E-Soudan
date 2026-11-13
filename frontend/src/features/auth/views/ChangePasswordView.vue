@@ -65,13 +65,13 @@ async function signOut() {
 <template>
   <AuthLayout>
     <h1
-      class="title"
-      :class="{ tight: forced || errorMessage }"
+      class="title flex items-baseline gap-2 text-base font-medium"
+      :class="forced || errorMessage ? 'tight mb-4' : 'mb-6'"
     >
       <span>{{ t('changePassword.title') }}</span>
       <span
         v-if="t('changePassword.titleSub')"
-        class="sub"
+        class="sub text-xs font-normal text-[#616161]"
       >{{ t('changePassword.titleSub') }}</span>
     </h1>
 
@@ -89,7 +89,7 @@ async function signOut() {
     </AlertBanner>
 
     <form
-      class="form"
+      class="form flex flex-col gap-6"
       @submit.prevent="submit"
     >
       <TextField
@@ -130,10 +130,10 @@ async function signOut() {
       </SubmitButton>
     </form>
 
-    <div class="support">
+    <div class="support mt-6 text-center">
       <button
         type="button"
-        class="link"
+        class="link cursor-pointer border-0 bg-transparent p-0 text-xs text-[#616161] underline hover:text-[#242424]"
         @click="signOut"
       >
         {{ t('auth.signOut') }}
@@ -141,49 +141,3 @@ async function signOut() {
     </div>
   </AuthLayout>
 </template>
-
-<style scoped>
-.title {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 0 0 24px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.title.tight {
-  margin-bottom: 16px;
-}
-
-.sub {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--color-text-secondary);
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.support {
-  margin-top: 24px;
-  text-align: center;
-}
-
-.link {
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.link:hover {
-  color: var(--color-text);
-}
-</style>

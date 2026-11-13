@@ -11,7 +11,7 @@ function choose(value: Locale) {
 
 <template>
   <nav
-    class="switcher"
+    class="switcher flex items-center gap-2 text-xs tracking-wide text-[#616161]"
     aria-label="Language"
   >
     <template
@@ -20,13 +20,13 @@ function choose(value: Locale) {
     >
       <span
         v-if="index > 0"
-        class="sep"
+        class="sep text-[#e1dfdd]"
         aria-hidden="true"
       >|</span>
       <button
         type="button"
-        class="item"
-        :class="{ active: locale === item }"
+        class="item cursor-pointer border-0 border-b border-transparent bg-transparent pb-0.5 text-inherit hover:text-[#242424]"
+        :class="{ 'active !cursor-default !border-b-[#242424] font-medium text-[#242424]': locale === item }"
         :aria-current="locale === item ? 'true' : undefined"
         :lang="item"
         @click="choose(item)"
@@ -36,40 +36,3 @@ function choose(value: Locale) {
     </template>
   </nav>
 </template>
-
-<style scoped>
-.switcher {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  letter-spacing: 0.025em;
-  color: var(--color-text-secondary);
-}
-
-.sep {
-  color: var(--color-border);
-}
-
-.item {
-  padding: 0 0 2px;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid transparent;
-  color: inherit;
-  font-size: inherit;
-  letter-spacing: inherit;
-  cursor: pointer;
-}
-
-.item:hover {
-  color: var(--color-text);
-}
-
-.item.active {
-  color: var(--color-text);
-  font-weight: 500;
-  border-bottom-color: var(--color-text);
-  cursor: default;
-}
-</style>

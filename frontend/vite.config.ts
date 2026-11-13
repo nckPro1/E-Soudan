@@ -6,6 +6,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://localhost:8080',
+      // WebSocket của trò chuyện (STOMP). Backend chỉ nhận Origin http://localhost:5173 (app.websocket.allowed-origins).
+      '/ws': { target: 'http://localhost:8080', ws: true },
     },
   },
   test: {
