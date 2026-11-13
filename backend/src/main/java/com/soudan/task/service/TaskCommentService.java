@@ -19,6 +19,7 @@ import com.soudan.common.exception.NotFoundException;
 import com.soudan.common.exception.ValidationException;
 import com.soudan.common.security.AccessPolicy;
 import com.soudan.common.security.CurrentUser;
+import com.soudan.task.TaskCommentReactedEvent;
 import com.soudan.task.TaskCommentedEvent;
 import com.soudan.task.domain.CommentReaction;
 import com.soudan.task.domain.Task;
@@ -115,7 +116,8 @@ public class TaskCommentService {
 
 	/** Thả biểu cảm vào bình luận của người khác. Thả lại cùng emoji thì không đổi gì (idempotent). */
 	public CommentView react(Long taskId, Long commentId, String emoji) {
-		requireCanView(load(taskId));
+		Task task = load(taskId);
+		requireCanView(task);
 		TaskComment comment = live(taskId, commentId);
 		Long me = currentUser.require().id();
 		// Không tự thả biểu cảm vào bình luận của mình (giống mạng xã hội: biểu cảm là phản hồi của người khác)
@@ -129,6 +131,8 @@ public class TaskCommentService {
 				throw new ValidationException(ErrorCode.TOO_MANY_REACTIONS, ErrorCode.TOO_MANY_REACTIONS.defaultMessage());
 			}
 			reactions.saveAndFlush(new CommentReaction(commentId, me, clean, clock.instant()));
+			events.publishEvent(new TaskCommentReactedEvent(taskId, task.getTeamId(), task.getTitle(), commentId,
+					comment.getAuthorId(), me, clean));
 		}
 		return viewOf(taskId, commentId);
 	}

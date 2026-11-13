@@ -25,7 +25,9 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import com.jayway.jsonpath.JsonPath;
 import com.soudan.common.security.SystemRole;
 import com.soudan.task.TaskAssignedEvent;
+import com.soudan.task.TaskCommentReactedEvent;
 import com.soudan.task.TaskCommentedEvent;
+import com.soudan.task.TaskReviewedEvent;
 import com.soudan.task.TaskSubmittedForReviewEvent;
 import com.soudan.user.domain.User;
 
@@ -575,6 +577,47 @@ class TaskApiIntegrationTest extends IntegrationTestBase {
 		assertThat(published.get(0).taskId()).isEqualTo(id);
 		assertThat(published.get(0).teamId()).isEqualTo(teamA);
 		assertThat(published.get(0).assigneeId()).isEqualTo(member.getId());
+	}
+
+	@Test
+	void should_publishReviewedEvent_when_leaderApprovesOrSendsBack() throws Exception {
+		long id = startedTask(false);
+		act(id, "submit-for-review", memberToken).andExpect(status().isOk());
+		events.clear();
+
+		send(post("/api/v1/tasks/" + id + "/request-revision"), leaderAToken,
+				"{\"version\":" + versionOf(id) + ",\"reason\":\"Thiếu số liệu\"}").andExpect(status().isOk());
+		var back = events.stream(TaskReviewedEvent.class).toList();
+		assertThat(back).hasSize(1);
+		assertThat(back.get(0).approved()).isFalse();
+		assertThat(back.get(0).reason()).isEqualTo("Thiếu số liệu");
+		assertThat(back.get(0).assigneeId()).isEqualTo(member.getId());
+		assertThat(back.get(0).reviewerId()).isEqualTo(leaderA.getId());
+
+		act(id, "submit-for-review", memberToken).andExpect(status().isOk());
+		events.clear();
+		act(id, "approve", leaderAToken).andExpect(status().isOk());
+		var approved = events.stream(TaskReviewedEvent.class).toList();
+		assertThat(approved).hasSize(1);
+		assertThat(approved.get(0).approved()).isTrue();
+	}
+
+	@Test
+	void should_publishReactedEvent_onlyForNewReactions() throws Exception {
+		long id = createTask("T", member, false);
+		long comment = commentOk(id, memberToken, "xong");
+		events.clear();
+
+		react(id, comment, leaderAToken, "👍").andExpect(status().isOk());
+		var published = events.stream(TaskCommentReactedEvent.class).toList();
+		assertThat(published).hasSize(1);
+		assertThat(published.get(0).commentAuthorId()).isEqualTo(member.getId());
+		assertThat(published.get(0).actorId()).isEqualTo(leaderA.getId());
+		assertThat(published.get(0).emoji()).isEqualTo("👍");
+
+		// Thả lại cùng emoji không phát thêm sự kiện
+		react(id, comment, leaderAToken, "👍").andExpect(status().isOk());
+		assertThat(events.stream(TaskCommentReactedEvent.class).count()).isEqualTo(1);
 	}
 
 	@Test

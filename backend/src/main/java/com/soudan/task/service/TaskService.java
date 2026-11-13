@@ -32,6 +32,7 @@ import com.soudan.common.security.CurrentUser;
 import com.soudan.common.security.TeamMembershipLookup;
 import com.soudan.common.security.TeamRole;
 import com.soudan.task.TaskAssignedEvent;
+import com.soudan.task.TaskReviewedEvent;
 import com.soudan.task.TaskSubmittedForReviewEvent;
 import com.soudan.task.domain.Task;
 import com.soudan.task.domain.TaskHistory;
@@ -152,14 +153,21 @@ public class TaskService {
 		Task task = load(id);
 		requireLeader(task.getTeamId());
 		checkVersion(task, version);
-		return transition(task, task::approve, null);
+		TaskView result = transition(task, task::approve, null);
+		events.publishEvent(new TaskReviewedEvent(task.getId(), task.getTeamId(), task.getTitle(),
+				task.getAssigneeId(), currentUser.require().id(), true, null));
+		return result;
 	}
 
 	public TaskView requestRevision(Long id, long version, String reason) {
 		Task task = load(id);
 		requireLeader(task.getTeamId());
 		checkVersion(task, version);
-		return transition(task, () -> task.requestRevision(reason), reason == null ? null : reason.trim());
+		String note = reason == null ? null : reason.trim();
+		TaskView result = transition(task, () -> task.requestRevision(reason), note);
+		events.publishEvent(new TaskReviewedEvent(task.getId(), task.getTeamId(), task.getTitle(),
+				task.getAssigneeId(), currentUser.require().id(), false, note));
+		return result;
 	}
 
 	// ---- đọc ----
