@@ -72,19 +72,21 @@ async function onCreated(task: Task) {
 
 <template>
   <section>
-    <div class="head">
-      <h2>{{ t('task.title') }}</h2>
+    <div class="head mb-3 mt-8 flex items-center justify-between">
+      <h2 class="text-base font-bold">
+        {{ t('task.title') }}
+      </h2>
       <button
         v-if="canAssign"
         type="button"
-        class="btn primary"
+        class="btn btn-primary"
         @click="creating = true"
       >
         {{ t('task.create') }}
       </button>
     </div>
 
-    <div class="filters">
+    <div class="filters mb-3 flex flex-wrap gap-3">
       <select
         v-model="status"
         class="control"
@@ -130,7 +132,7 @@ async function onCreated(task: Task) {
 
     <div
       v-if="result && result.totalPages > 1"
-      class="pager"
+      class="pager mt-4 flex items-center justify-center gap-4 text-[0.8125rem]"
     >
       <button
         type="button"
@@ -161,71 +163,3 @@ async function onCreated(task: Task) {
     />
   </section>
 </template>
-
-<style scoped>
-.head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 32px 0 12px;
-}
-
-h2 {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.control {
-  height: 36px;
-  padding: 0 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  color: var(--color-text);
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 16px;
-  font-size: 13px;
-}
-
-.btn {
-  height: 36px;
-  padding: 0 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-</style>

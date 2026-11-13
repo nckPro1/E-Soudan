@@ -9,7 +9,7 @@ import EmojiPicker from './EmojiPicker.vue'
  * Nút "Cảm xúc" mở bảng chọn biểu cảm: hàng emoji nhanh và nút "Thêm..." cho bảng đầy đủ.
  * Chọn lại emoji mình đã thả thì là gỡ nó (component cha xử lý bằng sự kiện pick).
  */
-const props = defineProps<{ reactions: Reaction[]; disabled?: boolean }>()
+const props = defineProps<{ reactions: Reaction[]; disabled?: boolean; icon?: boolean; plus?: boolean }>()
 const emit = defineEmits<{ pick: [emoji: string] }>()
 
 const QUICK = ['👍', '❤️', '😂', '🎉', '👀', '🙏']
@@ -51,34 +51,80 @@ onBeforeUnmount(() => {
 <template>
   <span
     ref="root"
-    class="wrap"
+    class="wrap relative"
   >
     <button
       type="button"
-      class="trigger"
-      :class="{ active: myEmoji !== null }"
+      :class="plus
+        ? 'flex items-center pl-1 text-xs text-[#616161] hover:text-black disabled:opacity-60'
+        : ['trigger cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold hover:enabled:underline disabled:cursor-not-allowed disabled:opacity-60', myEmoji !== null ? 'active text-[#4f52b2]' : 'text-[#616161]']"
       :disabled="disabled"
       :aria-expanded="open"
+      :aria-label="plus ? t('task.react') : undefined"
+      :title="plus ? t('task.react') : undefined"
       data-testid="add-reaction"
       @click="open = !open"
     >
-      <template v-if="myEmoji">{{ myEmoji }}</template>
-      {{ t('task.react') }}
+      <svg
+        v-if="plus"
+        viewBox="0 0 24 24"
+        class="h-3.5 w-3.5"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M12 4v16m8-8H4" />
+      </svg>
+      <svg
+        v-else-if="icon && !myEmoji"
+        class="ic h-[1.125rem] w-[1.125rem]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <circle
+          cx="12"
+          cy="12"
+          r="9"
+        />
+        <path d="M8.5 14.5c.9 1.2 2 1.8 3.5 1.8s2.6-.6 3.5-1.8" />
+        <circle
+          cx="9"
+          cy="10"
+          r="0.6"
+          fill="currentColor"
+        />
+        <circle
+          cx="15"
+          cy="10"
+          r="0.6"
+          fill="currentColor"
+        />
+      </svg>
+      <template v-if="!plus">
+        <template v-if="myEmoji">{{ myEmoji }}</template>
+        {{ t('task.react') }}
+      </template>
     </button>
 
     <div
       v-if="open"
-      class="popover"
+      class="popover absolute bottom-6 left-0 z-20 w-80 max-w-[calc(100vw-48px)] rounded-xl bg-white p-2 shadow-xl ring-1 ring-black/10"
       role="dialog"
       :aria-label="t('task.react')"
     >
-      <div class="quick">
+      <div class="quick flex flex-wrap items-center gap-1">
         <button
           v-for="emoji in QUICK"
           :key="emoji"
           type="button"
-          class="quick-btn"
-          :class="{ selected: mine.has(emoji) }"
+          class="quick-btn h-9 w-9 cursor-pointer rounded-full border-0 text-[1.375rem] transition-transform hover:scale-110 hover:bg-[#f5f5f5] motion-reduce:transition-none"
+          :class="mine.has(emoji) ? 'selected bg-[#4f52b2]/10' : 'bg-transparent'"
           :aria-label="emoji"
           :aria-pressed="mine.has(emoji)"
           @click="choose(emoji)"
@@ -87,7 +133,7 @@ onBeforeUnmount(() => {
         </button>
         <button
           type="button"
-          class="more"
+          class="more ml-auto cursor-pointer border-0 bg-transparent px-2 py-1 text-xs text-[#4f52b2] hover:underline"
           data-testid="more-emoji"
           @click="full = !full"
         >
@@ -101,92 +147,3 @@ onBeforeUnmount(() => {
     </div>
   </span>
 </template>
-
-<style scoped>
-.wrap {
-  position: relative;
-}
-
-.trigger {
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-}
-
-.trigger:hover:not(:disabled) {
-  text-decoration: underline;
-}
-
-.trigger.active {
-  color: var(--color-primary);
-}
-
-.trigger:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.popover {
-  position: absolute;
-  bottom: 24px;
-  left: 0;
-  z-index: 20;
-  width: 320px;
-  max-width: calc(100vw - 48px);
-  padding: 8px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-}
-
-.quick {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-}
-
-.quick-btn {
-  width: 36px;
-  height: 36px;
-  background: none;
-  border: 0;
-  border-radius: 50%;
-  font-size: 22px;
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-
-.quick-btn:hover {
-  background: var(--color-surface-muted);
-  transform: scale(1.15);
-}
-
-.quick-btn.selected {
-  background: #e9eef6;
-}
-
-.more {
-  margin-left: auto;
-  padding: 4px 8px;
-  background: none;
-  border: 0;
-  font-size: 12px;
-  color: var(--color-primary);
-  cursor: pointer;
-}
-
-.more:hover {
-  text-decoration: underline;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .quick-btn {
-    transition: none;
-  }
-}
-</style>

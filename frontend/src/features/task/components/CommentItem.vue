@@ -2,8 +2,11 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import UserAvatar from '../../../shared/components/UserAvatar.vue'
+import { useProfileStore } from '../../people/profile'
 import { timeAgo } from '../../../shared/utils/time'
 import type { TaskComment } from '../types'
+import { insertAtCaret } from '../../../shared/utils/caret'
+import EmojiInsertButton from './EmojiInsertButton.vue'
 import ReactionPicker from './ReactionPicker.vue'
 import ReactionSummary from './ReactionSummary.vue'
 
@@ -54,6 +57,19 @@ const liked = computed(() => props.comment.reactions.some((r) => r.emoji === LIK
 const when = computed(() => timeAgo(props.comment.createdAt, locale.value) ?? t('task.justNow'))
 const fullDate = computed(() => new Date(props.comment.createdAt).toLocaleString(locale.value))
 const authorName = computed(() => props.comment.author?.fullName ?? '')
+const profile = useProfileStore()
+const openAuthor = () => props.comment.author && profile.open(props.comment.author.id)
+
+/** Chèn emoji vào chỗ con trỏ trong ô sửa, rồi đưa con trỏ về ngay sau emoji. */
+function insertEmoji(emoji: string) {
+  const el = editInput.value
+  const result = insertAtCaret(draft.value, el?.selectionStart ?? null, el?.selectionEnd ?? null, emoji, MAX)
+  draft.value = result.value
+  void nextTick(() => {
+    el?.focus()
+    el?.setSelectionRange(result.caret, result.caret)
+  })
+}
 
 function onEditKey(event: KeyboardEvent) {
   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
@@ -67,24 +83,31 @@ function onEditKey(event: KeyboardEvent) {
 
 <template>
   <article
-    class="comment"
+    class="comment flex items-start gap-2"
     :class="{ small }"
   >
-    <UserAvatar
+    <button
       v-if="!comment.deleted"
-      :name="authorName"
-      :size="small ? 24 : 32"
-    />
+      type="button"
+      class="shrink-0 rounded-full"
+      :aria-label="authorName"
+      @click="openAuthor"
+    >
+      <UserAvatar
+        :name="authorName"
+        :size="small ? 24 : 32"
+      />
+    </button>
     <span
       v-else
-      class="ghost"
-      :class="{ small }"
+      class="ghost h-8 w-8 shrink-0"
+      :class="{ small, '!h-6 !w-6': small }"
     />
 
-    <div class="main">
+    <div class="main min-w-0 flex-1">
       <div
         v-if="comment.deleted"
-        class="bubble gone"
+        class="bubble gone inline-block rounded-[1.125rem] border border-dashed border-[#e1dfdd] px-3.5 py-2 text-[0.8125rem] italic text-[#616161]"
       >
         {{ t('task.commentDeleted') }}
       </div>
@@ -92,31 +115,35 @@ function onEditKey(event: KeyboardEvent) {
       <template v-else>
         <form
           v-if="editing"
-          class="edit"
+          class="edit max-w-[35rem]"
           @submit.prevent="draft.trim() && !busy && emit('saveEdit', draft)"
         >
           <textarea
             ref="editInput"
             v-model="draft"
-            class="edit-input"
+            class="edit-input block w-full resize-y rounded-[1.125rem] border border-[#4f52b2] bg-white px-3.5 py-2 text-sm leading-5 outline-none"
             rows="2"
             :maxlength="MAX"
             :aria-label="t('common.edit')"
             data-testid="edit-input"
             @keydown="onEditKey"
           />
-          <p class="hint">
+          <p class="hint ml-3 mt-1 flex items-center gap-1 text-xs text-[#616161]">
+            <EmojiInsertButton
+              :disabled="busy"
+              @pick="insertEmoji"
+            />
             {{ t('task.editHint') }}
             <button
               type="button"
-              class="link"
+              class="link ml-2 cursor-pointer border-0 bg-transparent p-0 text-xs text-[#4f52b2]"
               @click="emit('cancelEdit')"
             >
               {{ t('common.cancel') }}
             </button>
             <button
               type="submit"
-              class="link strong"
+              class="link strong ml-2 cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-[#4f52b2] disabled:cursor-not-allowed disabled:opacity-50"
               :disabled="busy || !draft.trim()"
             >
               {{ t('common.save') }}
@@ -125,27 +152,33 @@ function onEditKey(event: KeyboardEvent) {
         </form>
 
         <template v-else>
-          <div class="bubble-wrap">
-            <div class="bubble">
-              <strong class="name">{{ authorName }}</strong>
+          <div class="bubble-wrap relative inline-block max-w-full">
+            <div class="bubble rounded-[1.125rem] bg-[#f0f2f5] px-3.5 py-2">
+              <button
+                type="button"
+                class="name block text-left text-[0.8125rem] font-semibold leading-[1.125rem] hover:underline"
+                @click="openAuthor"
+              >
+                {{ authorName }}
+              </button>
               <!-- Văn bản thuần: {{ }} luôn được Vue escape nên không chạy được HTML hay script -->
-              <p class="text">
+              <p class="text whitespace-pre-wrap break-words text-sm leading-5">
                 {{ comment.body }}
               </p>
             </div>
             <ReactionSummary
               v-if="comment.reactions.length > 0"
-              class="reactions"
+              class="reactions absolute -bottom-3 -right-2"
               :reactions="comment.reactions"
             />
           </div>
 
-          <div class="meta">
+          <div class="meta ml-3 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#616161] [.bubble-wrap:has(.reactions)+&]:mt-4">
             <template v-if="!isMine">
               <button
                 type="button"
-                class="action"
-                :class="{ active: liked }"
+                class="action cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-[#616161] disabled:cursor-not-allowed disabled:opacity-60 hover:underline"
+                :class="{ 'active !text-[#4f52b2]': liked }"
                 :disabled="busy"
                 :aria-pressed="liked"
                 data-testid="like"
@@ -161,7 +194,7 @@ function onEditKey(event: KeyboardEvent) {
             </template>
             <button
               type="button"
-              class="action"
+              class="action cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-[#616161] disabled:cursor-not-allowed disabled:opacity-60 hover:underline"
               @click="emit('reply')"
             >
               {{ t('task.reply') }}
@@ -169,7 +202,7 @@ function onEditKey(event: KeyboardEvent) {
             <button
               v-if="isMine"
               type="button"
-              class="action"
+              class="action cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-[#616161] disabled:cursor-not-allowed disabled:opacity-60 hover:underline"
               @click="emit('startEdit')"
             >
               {{ t('common.edit') }}
@@ -177,19 +210,19 @@ function onEditKey(event: KeyboardEvent) {
             <button
               v-if="canDelete"
               type="button"
-              class="action danger"
+              class="action danger cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-[#616161] disabled:cursor-not-allowed disabled:opacity-60 hover:text-[#c4314b]"
               @click="emit('delete')"
             >
               {{ t('team.remove') }}
             </button>
             <time
-              class="time"
+              class="time text-xs font-normal text-[#616161]"
               :datetime="comment.createdAt"
               :title="fullDate"
             >{{ when }}</time>
             <span
               v-if="comment.editedAt"
-              class="time"
+              class="time text-xs font-normal text-[#616161]"
             >· {{ t('task.edited') }}</span>
           </div>
         </template>
@@ -197,164 +230,3 @@ function onEditKey(event: KeyboardEvent) {
     </div>
   </article>
 </template>
-
-<style scoped>
-.comment {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.ghost {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-}
-
-.ghost.small {
-  width: 24px;
-  height: 24px;
-}
-
-.main {
-  flex: 1;
-  min-width: 0;
-}
-
-.bubble-wrap {
-  position: relative;
-  display: inline-block;
-  max-width: 100%;
-}
-
-.bubble {
-  padding: 8px 14px;
-  background: var(--color-bubble);
-  border-radius: 18px;
-}
-
-.bubble.gone {
-  display: inline-block;
-  background: transparent;
-  border: 1px dashed var(--color-border);
-  font-size: 13px;
-  font-style: italic;
-  color: var(--color-text-secondary);
-}
-
-.name {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 18px;
-}
-
-.text {
-  margin: 0;
-  font-size: 14px;
-  line-height: 20px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-/* Tóm tắt biểu cảm gắn ở góc dưới bên phải bong bóng, nhô ra như Facebook */
-.reactions {
-  position: absolute;
-  right: -8px;
-  bottom: -12px;
-}
-
-.meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  margin: 4px 0 0 12px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-/* Chừa chỗ cho viên tóm tắt biểu cảm đang nhô xuống */
-.bubble-wrap:has(.reactions) + .meta {
-  margin-top: 16px;
-}
-
-.action {
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-}
-
-.action:hover:not(:disabled) {
-  text-decoration: underline;
-}
-
-.action.active {
-  color: var(--color-primary);
-}
-
-.action.danger:hover {
-  color: var(--color-danger);
-}
-
-.action:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.time {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--color-text-secondary);
-}
-
-.edit {
-  max-width: 560px;
-}
-
-.edit-input {
-  display: block;
-  width: 100%;
-  padding: 8px 14px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-primary);
-  border-radius: 18px;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 20px;
-  resize: vertical;
-}
-
-.edit-input:focus {
-  outline: 0;
-}
-
-.hint {
-  margin: 4px 0 0 12px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-.link {
-  margin-left: 8px;
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 12px;
-  color: var(--color-primary);
-  cursor: pointer;
-}
-
-.link.strong {
-  font-weight: 600;
-}
-
-.link:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-</style>

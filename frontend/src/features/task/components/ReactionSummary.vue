@@ -37,103 +37,41 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="root"
-    class="summary"
+    class="summary relative"
   >
     <button
       type="button"
-      class="pill"
+      class="pill inline-flex h-[1.375rem] cursor-pointer items-center gap-1 rounded-full border border-[#e1dfdd] bg-white px-[0.4375rem] text-xs text-[#616161] shadow-sm hover:bg-[#f5f5f5]"
       :title="summary"
       :aria-label="t('task.whoReacted')"
       :aria-expanded="open"
       data-testid="reaction-summary"
       @click="open = !open"
     >
-      <span class="emojis">
+      <span class="emojis inline-flex text-[0.8125rem] leading-none">
         <span
           v-for="reaction in top"
           :key="reaction.emoji"
+          class="[&+&]:-ml-0.5"
         >{{ reaction.emoji }}</span>
       </span>
-      <span class="total">{{ total }}</span>
+      <span class="total font-medium">{{ total }}</span>
     </button>
 
     <div
       v-if="open"
-      class="popover"
+      class="popover absolute bottom-7 right-0 z-20 min-w-[11.25rem] max-w-[16.25rem] rounded-md bg-white px-3 py-2 shadow-xl ring-1 ring-black/10"
       role="dialog"
       :aria-label="t('task.whoReacted')"
     >
       <p
         v-for="reaction in reactions"
         :key="reaction.emoji"
-        class="line"
+        class="line my-1 flex gap-2 text-[0.8125rem] leading-snug"
       >
-        <span class="emoji">{{ reaction.emoji }}</span>
+        <span class="emoji text-base">{{ reaction.emoji }}</span>
         <span>{{ reaction.users.join(', ') }}</span>
       </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-.summary {
-  position: relative;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: 22px;
-  padding: 0 7px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 11px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-}
-
-.pill:hover {
-  background: var(--color-surface-muted);
-}
-
-.emojis {
-  display: inline-flex;
-  font-size: 13px;
-  line-height: 1;
-}
-
-.emojis span + span {
-  margin-left: -2px;
-}
-
-.total {
-  font-weight: 500;
-}
-
-.popover {
-  position: absolute;
-  right: 0;
-  bottom: 28px;
-  z-index: 20;
-  min-width: 180px;
-  max-width: 260px;
-  padding: 8px 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-.line {
-  display: flex;
-  gap: 8px;
-  margin: 4px 0;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.emoji {
-  font-size: 16px;
-}
-</style>

@@ -52,8 +52,10 @@ function goTo(target: number) {
 
 <template>
   <div>
-    <div class="head">
-      <h1>{{ t('task.myTasks') }}</h1>
+    <div class="head mb-6 flex items-center justify-between">
+      <h1 class="page-title">
+        {{ t('task.myTasks') }}
+      </h1>
       <select
         v-model="status"
         class="control"
@@ -84,7 +86,7 @@ function goTo(target: number) {
 
     <div
       v-if="result && result.totalPages > 1"
-      class="pager"
+      class="pager mt-4 flex items-center justify-center gap-4 text-[0.8125rem]"
     >
       <button
         type="button"
@@ -106,53 +108,3 @@ function goTo(target: number) {
     </div>
   </div>
 </template>
-
-<style scoped>
-.head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-h1 {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: 20px;
-  font-weight: 500;
-}
-
-.control {
-  height: 36px;
-  padding: 0 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  color: var(--color-text);
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 16px;
-  font-size: 13px;
-}
-
-.btn {
-  height: 36px;
-  padding: 0 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-</style>

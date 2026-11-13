@@ -8,41 +8,15 @@ const { t } = useI18n()
 
 <template>
   <span
-    class="chip"
-    :class="status.toLowerCase()"
+    class="chip inline-block whitespace-nowrap rounded border px-2 py-0.5 text-xs"
+    :class="[
+      status.toLowerCase(),
+      {
+        ASSIGNED: 'border-[#e1dfdd] text-[#616161]',
+        IN_PROGRESS: 'border-[#4f52b2] text-[#4f52b2]',
+        PENDING_REVIEW: 'border-[#d9822b] bg-[#d9822b] text-white',
+        DONE: 'border-[#107c41] bg-[#107c41] text-white',
+      }[status],
+    ]"
   >{{ t(`task.statuses.${status}`) }}</span>
 </template>
-
-<style scoped>
-.chip {
-  display: inline-block;
-  padding: 2px 8px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.assigned {
-  color: var(--color-text-secondary);
-}
-
-.in_progress {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-/* Chờ duyệt: cam */
-.pending_review {
-  border-color: var(--color-warning);
-  background: var(--color-warning);
-  color: #fff;
-}
-
-/* Hoàn thành: xanh */
-.done {
-  border-color: var(--color-success);
-  background: var(--color-success);
-  color: #fff;
-}
-</style>

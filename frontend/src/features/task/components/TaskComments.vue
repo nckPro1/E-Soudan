@@ -160,10 +160,12 @@ async function confirmDelete() {
 
 <template>
   <section>
-    <h2>{{ t('task.comments') }} ({{ liveCount }})</h2>
+    <h2 class="mb-3 mt-8 text-base font-bold">
+      {{ t('task.comments') }} ({{ liveCount }})
+    </h2>
     <p
       v-if="!loading && comments.length === 0"
-      class="muted"
+      class="muted mb-3 text-[0.8125rem] text-[#616161]"
     >
       {{ t('task.noComments') }}
     </p>
@@ -172,11 +174,11 @@ async function confirmDelete() {
       {{ error }}
     </AlertBanner>
 
-    <ul class="threads">
+    <ul class="threads m-0 max-w-[45rem] list-none p-0">
       <li
         v-for="root in roots"
         :key="root.id"
-        class="thread"
+        class="thread mb-4"
       >
         <CommentItem
           :comment="root"
@@ -194,12 +196,12 @@ async function confirmDelete() {
 
         <div
           v-if="repliesOf(root.id).length > 0 || replyFormOpenFor(root)"
-          class="replies"
+          class="replies ml-10 mt-2 flex flex-col gap-2"
         >
           <button
             v-if="hiddenCount(root) > 0"
             type="button"
-            class="view-replies"
+            class="view-replies cursor-pointer self-start border-0 bg-transparent p-0 text-[0.8125rem] font-semibold text-[#616161] hover:underline"
             data-testid="view-replies"
             @click="expand(root.id)"
           >
@@ -237,11 +239,11 @@ async function confirmDelete() {
               @submit="submitReply"
               @cancel="replyTo = null"
             />
-            <p class="cancel-reply">
+            <p class="cancel-reply ml-8 mt-1 text-xs text-[#616161]">
               {{ t('task.escToCancel') }}
               <button
                 type="button"
-                class="link"
+                class="link ml-1.5 cursor-pointer border-0 bg-transparent p-0 text-xs text-[#4f52b2]"
                 @click="replyTo = null"
               >
                 {{ t('common.cancel') }}
@@ -252,7 +254,7 @@ async function confirmDelete() {
       </li>
     </ul>
 
-    <div class="new-comment">
+    <div class="new-comment mt-2 max-w-[45rem]">
       <CommentComposer
         v-model="newText"
         :avatar-name="myName"
@@ -267,10 +269,10 @@ async function confirmDelete() {
       :title="t('task.deleteCommentTitle')"
       @close="deleteTarget = null"
     >
-      <p class="confirm-text">
+      <p class="confirm-text mb-4 text-sm">
         {{ t('task.deleteCommentConfirm') }}
       </p>
-      <div class="row">
+      <div class="row mt-2 flex justify-end gap-2">
         <button
           type="button"
           class="btn"
@@ -280,7 +282,7 @@ async function confirmDelete() {
         </button>
         <button
           type="button"
-          class="btn primary"
+          class="btn btn-primary"
           @click="confirmDelete"
         >
           {{ t('common.confirm') }}
@@ -289,102 +291,3 @@ async function confirmDelete() {
     </ModalDialog>
   </section>
 </template>
-
-<style scoped>
-h2 {
-  margin: 32px 0 12px;
-  font-family: var(--font-serif);
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.muted {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.threads {
-  max-width: 720px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.thread {
-  margin-bottom: 16px;
-}
-
-/* Phản hồi thụt vào bằng đúng bề rộng ảnh đại diện + khoảng cách */
-.replies {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 8px 0 0 40px;
-}
-
-.view-replies {
-  align-self: flex-start;
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-}
-
-.view-replies:hover {
-  text-decoration: underline;
-}
-
-.cancel-reply {
-  margin: 4px 0 0 32px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-.link {
-  margin-left: 6px;
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 12px;
-  color: var(--color-primary);
-  cursor: pointer;
-}
-
-.new-comment {
-  max-width: 720px;
-  margin-top: 8px;
-}
-
-.row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.btn {
-  height: 34px;
-  padding: 0 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn.primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
-}
-
-.confirm-text {
-  margin: 0 0 16px;
-  font-size: 14px;
-}
-</style>

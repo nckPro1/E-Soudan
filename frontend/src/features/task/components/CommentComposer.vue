@@ -2,6 +2,8 @@
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import UserAvatar from '../../../shared/components/UserAvatar.vue'
+import { insertAtCaret } from '../../../shared/utils/caret'
+import EmojiInsertButton from './EmojiInsertButton.vue'
 
 /**
  * Ô viết bình luận kiểu mạng xã hội: ảnh đại diện, ô nhập bo tròn tự giãn theo nội dung, nút gửi nằm trong ô.
@@ -37,6 +39,17 @@ onMounted(() => {
   if (props.autofocus) input.value?.focus()
 })
 
+/** Chèn emoji vào chỗ con trỏ rồi đưa con trỏ về ngay sau emoji. */
+function insertEmoji(emoji: string) {
+  const el = input.value
+  const result = insertAtCaret(props.modelValue, el?.selectionStart ?? null, el?.selectionEnd ?? null, emoji, props.max)
+  emit('update:modelValue', result.value)
+  void nextTick(() => {
+    el?.focus()
+    el?.setSelectionRange(result.caret, result.caret)
+  })
+}
+
 function onKeydown(event: KeyboardEvent) {
   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
     event.preventDefault()
@@ -49,17 +62,17 @@ function onKeydown(event: KeyboardEvent) {
 
 <template>
   <form
-    class="composer"
+    class="composer flex items-start gap-2"
     @submit.prevent="modelValue.trim() && !busy && emit('submit')"
   >
     <UserAvatar
       :name="avatarName"
       :size="small ? 24 : 32"
     />
-    <div class="box">
+    <div class="box relative min-w-0 flex-1">
       <textarea
         ref="input"
-        class="input"
+        class="input block max-h-40 min-h-9 w-full resize-none overflow-y-auto rounded-[1.125rem] border border-transparent bg-[#f0f2f5] py-2 pl-3.5 pr-[4.5rem] text-sm leading-5 text-[#242424] outline-none placeholder:text-[#616161] focus:border-[#4f52b2] focus:bg-white"
         rows="1"
         :value="modelValue"
         :placeholder="placeholder"
@@ -69,9 +82,15 @@ function onKeydown(event: KeyboardEvent) {
         @input="emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
         @keydown="onKeydown"
       />
+      <span class="emoji absolute bottom-[0.3125rem] right-9">
+        <EmojiInsertButton
+          :disabled="busy"
+          @pick="insertEmoji"
+        />
+      </span>
       <button
         type="submit"
-        class="send"
+        class="send absolute bottom-[0.3125rem] right-1.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[#4f52b2] hover:enabled:bg-[#4f52b2]/10 disabled:cursor-not-allowed disabled:text-[#e1dfdd]"
         :disabled="busy || !modelValue.trim()"
         :aria-label="t('task.sendComment')"
         data-testid="composer-send"
@@ -90,80 +109,8 @@ function onKeydown(event: KeyboardEvent) {
   </form>
   <p
     v-if="modelValue.length > max - 200"
-    class="counter"
+    class="counter ml-10 mt-0.5 text-[0.6875rem] text-[#c4314b]"
   >
     {{ modelValue.length }} / {{ max }}
   </p>
 </template>
-
-<style scoped>
-.composer {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.box {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-}
-
-.input {
-  display: block;
-  width: 100%;
-  min-height: 36px;
-  max-height: 160px;
-  padding: 8px 40px 8px 14px;
-  background: var(--color-bubble);
-  border: 1px solid transparent;
-  border-radius: 18px;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--color-text);
-  resize: none;
-  overflow-y: auto;
-}
-
-.input:focus {
-  background: var(--color-surface);
-  border-color: var(--color-primary);
-  outline: 0;
-}
-
-.input::placeholder {
-  color: var(--color-text-secondary);
-}
-
-.send {
-  position: absolute;
-  right: 6px;
-  bottom: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: none;
-  border: 0;
-  border-radius: 50%;
-  color: var(--color-primary);
-  cursor: pointer;
-}
-
-.send:hover:not(:disabled) {
-  background: #e9eef6;
-}
-
-.send:disabled {
-  color: var(--color-border);
-  cursor: not-allowed;
-}
-
-.counter {
-  margin: 2px 0 0 40px;
-  font-size: 11px;
-  color: var(--color-danger);
-}
-</style>

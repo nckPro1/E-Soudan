@@ -41,37 +41,13 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="host"
-    class="picker-host"
+    class="picker-host [--background:#fff] [--border-color:#e1dfdd] [--border-radius:4px] [--emoji-size:1.3rem] [--indicator-color:#4f52b2] [--input-border-color:#e1dfdd] [--input-border-radius:4px] [--num-columns:8] [--outline-color:#4f52b2] [&_emoji-picker]:h-80 [&_emoji-picker]:w-full"
   >
     <p
       v-if="failed"
-      class="fail"
+      class="fail m-2 text-[#c4314b]"
     >
       …
     </p>
   </div>
 </template>
-
-<style scoped>
-.picker-host {
-  --background: var(--color-surface);
-  --border-color: var(--color-border);
-  --border-radius: 4px;
-  --indicator-color: var(--color-primary);
-  --input-border-color: var(--color-border);
-  --input-border-radius: 4px;
-  --outline-color: var(--color-primary);
-  --num-columns: 8;
-  --emoji-size: 1.3rem;
-}
-
-.picker-host :deep(emoji-picker) {
-  width: 100%;
-  height: 320px;
-}
-
-.fail {
-  margin: 8px;
-  color: var(--color-danger);
-}
-</style>

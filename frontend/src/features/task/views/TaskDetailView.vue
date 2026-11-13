@@ -173,7 +173,7 @@ async function download(file: Submission) {
     <RouterLink
       v-if="task"
       :to="{ name: 'team-detail', params: { id: task.teamId } }"
-      class="back"
+      class="back mb-4 inline-block text-[0.8125rem] text-[#616161] hover:text-[#242424]"
     >
       ← {{ task.teamName }}
     </RouterLink>
@@ -190,25 +190,27 @@ async function download(file: Submission) {
 
     <p
       v-if="loading"
-      class="muted"
+      class="muted text-[0.8125rem] text-[#616161]"
     >
       {{ t('common.loading') }}
     </p>
 
     <template v-else-if="task">
-      <div class="head">
+      <div class="head mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1>{{ task.title }}</h1>
-          <p class="muted">
+          <h1 class="page-title">
+            {{ task.title }}
+          </h1>
+          <p class="muted text-[0.8125rem] text-[#616161]">
             {{ t('task.assignedBy', { name: task.assignedBy?.fullName ?? '' }) }}
           </p>
         </div>
-        <div class="head-actions">
+        <div class="head-actions flex items-center gap-2">
           <TaskStatusChip :status="task.status" />
           <button
             v-if="isLeader && status !== 'DONE'"
             type="button"
-            class="btn secondary"
+            class="btn"
             @click="editing = true"
           >
             {{ t('common.edit') }}
@@ -222,20 +224,28 @@ async function download(file: Submission) {
         <strong>{{ t('task.revisionRequested') }}</strong> {{ task.revisionReason }}
       </AlertBanner>
 
-      <section class="card">
-        <dl>
-          <dt>{{ t('task.assignee') }}</dt>
+      <section class="card panel max-w-[40rem] p-6">
+        <dl class="grid grid-cols-[140px_1fr] gap-x-4 gap-y-2 text-[0.8125rem]">
+          <dt class="text-[#616161]">
+            {{ t('task.assignee') }}
+          </dt>
           <dd>{{ task.assignee?.fullName }}</dd>
-          <dt>{{ t('task.dueDate') }}</dt>
+          <dt class="text-[#616161]">
+            {{ t('task.dueDate') }}
+          </dt>
           <dd>{{ task.dueDate ?? '—' }}</dd>
-          <dt>{{ t('task.priority') }}</dt>
+          <dt class="text-[#616161]">
+            {{ t('task.priority') }}
+          </dt>
           <dd>{{ t(`task.priorities.${task.priority}`) }}</dd>
-          <dt>{{ t('task.requireFile') }}</dt>
+          <dt class="text-[#616161]">
+            {{ t('task.requireFile') }}
+          </dt>
           <dd>{{ task.requireFile ? t('common.yes') : t('common.no') }}</dd>
         </dl>
         <p
           v-if="task.description"
-          class="description"
+          class="description mt-4 whitespace-pre-wrap border-t border-[#e1dfdd] pt-4 text-[0.8125rem] leading-relaxed"
         >
           {{ task.description }}
         </p>
@@ -244,12 +254,12 @@ async function download(file: Submission) {
       <!-- Hành động theo vai trò và trạng thái. Backend vẫn là nơi quyết định. -->
       <section
         v-if="(isAssignee && (status === 'ASSIGNED' || status === 'IN_PROGRESS')) || (isLeader && status === 'PENDING_REVIEW')"
-        class="actions"
+        class="actions mb-4 mt-6 flex flex-wrap items-center gap-3"
       >
         <button
           v-if="isAssignee && status === 'ASSIGNED'"
           type="button"
-          class="btn primary"
+          class="btn btn-primary"
           :disabled="acting"
           @click="start"
         >
@@ -258,7 +268,7 @@ async function download(file: Submission) {
         <template v-if="isAssignee && status === 'IN_PROGRESS'">
           <button
             type="button"
-            class="btn secondary"
+            class="btn"
             :disabled="acting"
             @click="fileInput?.click()"
           >
@@ -266,7 +276,7 @@ async function download(file: Submission) {
           </button>
           <button
             type="button"
-            class="btn primary"
+            class="btn btn-primary"
             :disabled="acting || needsFileFirst"
             @click="submitForReview"
           >
@@ -274,13 +284,13 @@ async function download(file: Submission) {
           </button>
           <span
             v-if="needsFileFirst"
-            class="muted"
+            class="muted text-[0.8125rem] text-[#616161]"
           >{{ t('task.fileRequiredHint') }}</span>
         </template>
         <template v-if="isLeader && status === 'PENDING_REVIEW'">
           <button
             type="button"
-            class="btn primary"
+            class="btn btn-primary"
             :disabled="acting"
             @click="approveOpen = true"
           >
@@ -288,7 +298,7 @@ async function download(file: Submission) {
           </button>
           <button
             type="button"
-            class="btn secondary"
+            class="btn"
             :disabled="acting"
             @click="revisionOpen = true"
           >
@@ -310,16 +320,18 @@ async function download(file: Submission) {
       </AlertBanner>
 
       <section>
-        <h2>{{ t('task.submissions') }} ({{ task.submissions.length }})</h2>
+        <h2 class="mb-3 mt-8 text-base font-bold">
+          {{ t('task.submissions') }} ({{ task.submissions.length }})
+        </h2>
         <p
           v-if="task.submissions.length === 0"
-          class="muted"
+          class="muted text-[0.8125rem] text-[#616161]"
         >
           {{ t('task.noSubmissions') }}
         </p>
         <ul
           v-else
-          class="files"
+          class="files m-0 list-none p-0 text-[0.8125rem] [&>li]:py-1.5"
         >
           <li
             v-for="file in task.submissions"
@@ -328,33 +340,35 @@ async function download(file: Submission) {
             <button
               v-if="canDownload"
               type="button"
-              class="link"
+              class="link cursor-pointer"
               @click="download(file)"
             >
               {{ file.fileName }}
             </button>
             <span v-else>{{ file.fileName }}</span>
-            <span class="muted"> · {{ size(file.sizeBytes) }} · {{ dateTime(file.uploadedAt) }}</span>
+            <span class="muted text-[0.8125rem] text-[#616161]"> · {{ size(file.sizeBytes) }} · {{ dateTime(file.uploadedAt) }}</span>
           </li>
         </ul>
       </section>
 
       <section>
-        <h2>{{ t('task.history') }}</h2>
-        <ol class="timeline">
+        <h2 class="mb-3 mt-8 text-base font-bold">
+          {{ t('task.history') }}
+        </h2>
+        <ol class="timeline m-0 list-none border-l-2 border-[#e1dfdd] p-0 pl-4 [&>li]:relative [&>li]:flex [&>li]:gap-4 [&>li]:pb-4 [&>li]:pl-4 [&>li]:text-[0.8125rem] max-md:[&>li]:flex-col [&>li]:before:absolute [&>li]:before:-left-[1.375rem] [&>li]:before:top-[0.3125rem] [&>li]:before:h-2 [&>li]:before:w-2 [&>li]:before:rounded-full [&>li]:before:bg-[#4f52b2] [&>li]:before:content-['']">
           <li
             v-for="entry in history"
             :key="entry.id"
           >
-            <div class="when">
+            <div class="when w-40 shrink-0 text-[#616161]">
               {{ dateTime(entry.changedAt) }}
             </div>
             <div>
               <TaskStatusChip :status="entry.toStatus" />
-              <span class="muted"> {{ entry.changedBy?.fullName }}</span>
+              <span class="muted text-[0.8125rem] text-[#616161]"> {{ entry.changedBy?.fullName }}</span>
               <p
                 v-if="entry.note"
-                class="note"
+                class="note mt-1 whitespace-pre-wrap"
               >
                 {{ entry.note }}
               </p>
@@ -383,13 +397,13 @@ async function download(file: Submission) {
       :title="t('task.approve')"
       @close="approveOpen = false"
     >
-      <p class="confirm-text">
+      <p class="confirm-text mb-4 text-sm">
         {{ t('task.approveConfirm') }}
       </p>
-      <div class="buttons">
+      <div class="buttons mt-2 flex justify-end gap-2">
         <button
           type="button"
-          class="btn secondary"
+          class="btn"
           :disabled="acting"
           @click="approveOpen = false"
         >
@@ -397,7 +411,7 @@ async function download(file: Submission) {
         </button>
         <button
           type="button"
-          class="btn primary"
+          class="btn btn-primary"
           :disabled="acting"
           @click="approve"
         >
@@ -413,19 +427,19 @@ async function download(file: Submission) {
     >
       <label
         for="revision-reason"
-        class="label"
+        class="label field-label"
       >{{ t('task.revisionReason') }}</label>
       <textarea
         id="revision-reason"
         v-model="revisionReason"
-        class="textarea"
+        class="textarea control mb-2 w-full resize-y"
         rows="4"
         maxlength="1000"
       />
-      <div class="buttons">
+      <div class="buttons mt-2 flex justify-end gap-2">
         <button
           type="button"
-          class="btn secondary"
+          class="btn"
           :disabled="acting"
           @click="revisionOpen = false"
         >
@@ -433,7 +447,7 @@ async function download(file: Submission) {
         </button>
         <button
           type="button"
-          class="btn primary"
+          class="btn btn-primary"
           :disabled="acting || !revisionReason.trim()"
           @click="sendRevision"
         >
@@ -443,232 +457,3 @@ async function download(file: Submission) {
     </ModalDialog>
   </div>
 </template>
-
-<style scoped>
-.back {
-  display: inline-block;
-  margin-bottom: 16px;
-  font-size: 13px;
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-.back:hover {
-  text-decoration: underline;
-}
-
-.head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.head-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-h1 {
-  margin: 0 0 4px;
-  font-family: var(--font-serif);
-  font-size: 20px;
-  font-weight: 500;
-}
-
-h2 {
-  margin: 32px 0 12px;
-  font-family: var(--font-serif);
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.muted {
-  margin: 0;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.card {
-  max-width: 640px;
-  padding: 24px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-dl {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 8px 16px;
-  margin: 0;
-  font-size: 14px;
-}
-
-dt {
-  color: var(--color-text-secondary);
-}
-
-dd {
-  margin: 0;
-}
-
-.description {
-  margin: 16px 0 0;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border);
-  font-size: 14px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 24px 0 16px;
-}
-
-.hidden {
-  display: none;
-}
-
-.files {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 14px;
-}
-
-.files li {
-  padding: 6px 0;
-}
-
-.link {
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 14px;
-  color: var(--color-primary);
-  cursor: pointer;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
-.timeline {
-  margin: 0;
-  padding: 0 0 0 16px;
-  list-style: none;
-  border-left: 2px solid var(--color-border);
-}
-
-.timeline li {
-  position: relative;
-  display: flex;
-  gap: 16px;
-  padding: 0 0 16px 16px;
-  font-size: 13px;
-}
-
-.timeline li::before {
-  content: '';
-  position: absolute;
-  left: -22px;
-  top: 5px;
-  width: 8px;
-  height: 8px;
-  background: var(--color-primary);
-  border-radius: 50%;
-}
-
-.when {
-  flex-shrink: 0;
-  width: 160px;
-  color: var(--color-text-secondary);
-}
-
-.note {
-  margin: 4px 0 0;
-  white-space: pre-wrap;
-}
-
-.label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.textarea {
-  width: 100%;
-  padding: 10px 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  resize: vertical;
-}
-
-.confirm-text {
-  margin: 0 0 24px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.btn {
-  height: 36px;
-  padding: 0 16px;
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.primary {
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: #fff;
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.secondary {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
-
-@media (max-width: 720px) {
-  .timeline li {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .when {
-    width: auto;
-  }
-
-  dl {
-    grid-template-columns: 110px 1fr;
-  }
-}
-</style>

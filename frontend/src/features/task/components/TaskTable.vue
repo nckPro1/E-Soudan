@@ -14,7 +14,7 @@ const overdue = (task: Task) => task.dueDate !== null && task.dueDate < today &&
 
 <template>
   <div class="table-wrap">
-    <table class="table">
+    <table class="table data-table">
       <thead>
         <tr>
           <th>{{ t('task.titleLabel') }}</th>
@@ -35,7 +35,7 @@ const overdue = (task: Task) => task.dueDate !== null && task.dueDate < today &&
           <td>
             <RouterLink
               :to="{ name: 'task-detail', params: { id: task.id } }"
-              class="name"
+              class="name link"
             >
               {{ task.title }}
             </RouterLink>
@@ -44,7 +44,7 @@ const overdue = (task: Task) => task.dueDate !== null && task.dueDate < today &&
             {{ task.teamName ?? '' }}
           </td>
           <td>{{ task.assignee?.fullName ?? '' }}</td>
-          <td :class="{ overdue: overdue(task) }">
+          <td :class="{ 'overdue !text-[#c4314b]': overdue(task) }">
             {{ task.dueDate ?? '' }}
             <span v-if="overdue(task)">({{ t('task.overdue') }})</span>
           </td>
@@ -56,7 +56,7 @@ const overdue = (task: Task) => task.dueDate !== null && task.dueDate < today &&
         <tr v-if="!loading && tasks.length === 0">
           <td
             :colspan="showTeam ? 6 : 5"
-            class="empty"
+            class="empty empty-cell"
           >
             {{ t('task.empty') }}
           </td>
@@ -65,57 +65,3 @@ const overdue = (task: Task) => task.dueDate !== null && task.dueDate < today &&
     </table>
   </div>
 </template>
-
-<style scoped>
-.table-wrap {
-  overflow-x: auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-th,
-td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
-  text-align: left;
-}
-
-th {
-  background: var(--color-surface-muted);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-}
-
-tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-.name {
-  color: var(--color-primary);
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.name:hover {
-  text-decoration: underline;
-}
-
-.overdue {
-  color: var(--color-danger);
-}
-
-.empty {
-  padding: 32px;
-  text-align: center;
-  color: var(--color-text-secondary);
-}
-</style>

@@ -76,7 +76,7 @@ async function submit() {
       {{ t('task.noAssignable') }}
     </AlertBanner>
     <form
-      class="form"
+      class="form flex flex-col gap-4"
       @submit.prevent="submit"
     >
       <TextField
@@ -90,12 +90,12 @@ async function submit() {
       <div class="field">
         <label
           for="task-description"
-          class="label"
+          class="label field-label"
         >{{ t('team.description') }}</label>
         <textarea
           id="task-description"
           v-model="description"
-          class="textarea"
+          class="textarea control w-full resize-y"
           rows="3"
           :disabled="saving"
         />
@@ -103,12 +103,12 @@ async function submit() {
       <div class="field">
         <label
           for="task-assignee"
-          class="label"
+          class="label field-label"
         >{{ t('task.assignee') }}</label>
         <select
           id="task-assignee"
           v-model="assigneeId"
-          class="select"
+          class="select control w-full"
           :disabled="saving"
           required
         >
@@ -121,29 +121,29 @@ async function submit() {
           </option>
         </select>
       </div>
-      <div class="row">
+      <div class="row grid grid-cols-2 gap-4">
         <div class="field">
           <label
             for="task-due"
-            class="label"
+            class="label field-label"
           >{{ t('task.dueDate') }}</label>
           <input
             id="task-due"
             v-model="dueDate"
             type="date"
-            class="select"
+            class="select control w-full"
             :disabled="saving"
           >
         </div>
         <div class="field">
           <label
             for="task-priority"
-            class="label"
+            class="label field-label"
           >{{ t('task.priority') }}</label>
           <select
             id="task-priority"
             v-model="priority"
-            class="select"
+            class="select control w-full"
             :disabled="saving"
           >
             <option value="LOW">
@@ -158,7 +158,7 @@ async function submit() {
           </select>
         </div>
       </div>
-      <label class="check">
+      <label class="check flex items-center gap-2 text-[0.8125rem]">
         <input
           v-model="requireFile"
           type="checkbox"
@@ -166,10 +166,10 @@ async function submit() {
         >
         {{ t('task.requireFile') }}
       </label>
-      <div class="buttons">
+      <div class="buttons mt-2 flex justify-end gap-2">
         <button
           type="button"
-          class="btn secondary"
+          class="btn"
           :disabled="saving"
           @click="emit('close')"
         >
@@ -177,7 +177,7 @@ async function submit() {
         </button>
         <button
           type="submit"
-          class="btn primary"
+          class="btn btn-primary"
           :disabled="saving || assignable.length === 0"
         >
           {{ saving ? t('changePassword.saving') : t('common.save') }}
@@ -186,88 +186,3 @@ async function submit() {
     </form>
   </ModalDialog>
 </template>
-
-<style scoped>
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.select,
-.textarea {
-  width: 100%;
-  padding: 0 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  color: var(--color-text);
-}
-
-.select {
-  height: 44px;
-}
-
-.textarea {
-  padding: 10px 12px;
-  resize: vertical;
-}
-
-.check {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.btn {
-  height: 40px;
-  padding: 0 20px;
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.primary {
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: #fff;
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.secondary {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
-</style>
