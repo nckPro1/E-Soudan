@@ -26,3 +26,6 @@ Thumbs.db
 
 # File nộp khi chạy cục bộ
 /storage/
+
+# Thư mục upload lạc do ${java.io.tmpdir} không được thay giá trị (xem docs: sửa app.storage.dir)
+**/${java.io.tmpdir}/
