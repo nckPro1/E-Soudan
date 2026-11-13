@@ -220,6 +220,12 @@ Chạy trọn luồng giao – làm – nộp – duyệt hoặc trả lại có
 
 ## Stage 4 — Báo cáo hằng ngày và nhận xét
 
+> **Cập nhật 13/11/2026 — Stage 4 đổi mô hình (chủ dự án chốt):** không còn chuỗi Member → Leader → Manager.
+> Manager tạo **cộng đồng** (ví dụ "Phòng phát triển số 2") và thêm Leader/Member vào; ai được thêm mới thấy trang báo cáo.
+> Mọi thành viên trong cộng đồng thấy báo cáo của nhau như feed của Teams; Leader không có quyền đặc biệt;
+> Manager (chủ cộng đồng) đọc, nhận xét, thấy ai chưa nộp và quản lý thành viên. Admin không tham gia.
+> Nội dung bên dưới là bản cũ, chỉ còn tham khảo (bảng quyền xem báo cáo, Observer, vai Leader đã bị thay thế).
+
 **Câu hỏi nghiệp vụ:** *Mỗi người báo cáo cho ai, và ai được đọc báo cáo của ai?*
 
 ### Mục tiêu

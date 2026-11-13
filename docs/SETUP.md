@@ -130,3 +130,36 @@ $env:MAIL_SMTP_AUTH='true'; $env:MAIL_FROM='ban@gmail.com'
 - Gmail yêu cầu **mật khẩu ứng dụng** (bật xác minh 2 bước rồi tạo tại myaccount.google.com/apppasswords), không dùng mật khẩu đăng nhập.
 - Email chỉ đến được hộp thư thật nếu **tài khoản người dùng trong hệ thống có địa chỉ email thật**. Tài khoản mẫu như `admin@soudan.local` hay `e2e-...@soudan.local` là địa chỉ giả nên không bao giờ nhận được thư.
 - Lỗi gửi (sai mật khẩu, bị chặn...) được ghi log của backend (`Gửi email tới ... thất bại`), sự kiện được giữ lại và gửi lại khi khởi động lại backend.
+
+## Trợ lý AI
+
+Trợ lý AI gọi Claude qua API; nội dung người hỏi được phép xem (báo cáo, công việc, chat nhóm, ghi chú lịch) được gửi tới nhà cung cấp trong mỗi lượt hỏi.
+
+```
+# bash
+export ANTHROPIC_API_KEY='<khoá API>'
+# PowerShell
+$env:ANTHROPIC_API_KEY='<khoá API>'
+```
+
+- Có thể đặt trong file `.env` (xem phần cấu hình mail ở trên). **Không** commit khoá.
+- `AI_MODEL` đổi mô hình (mặc định `claude-sonnet-5-5`).
+- `AI_PROVIDER=mock` để chạy thử giao diện không gọi ra ngoài.
+- Chưa đặt khoá thì ứng dụng vẫn chạy; trang Trợ lý AI hiện thông báo chưa cấu hình.
+
+### Chạy mô hình tại chỗ (dữ liệu không rời mạng nội bộ)
+
+Dùng được Ollama, vLLM hoặc LM Studio (giao thức tương thích OpenAI). Ví dụ với Ollama:
+
+```
+# 1) Cài Ollama (ollama.com) rồi tải một mô hình, ví dụ:
+ollama pull qwen2.5:7b
+# 2) Đặt độ dài ngữ cảnh đủ lớn TRƯỚC khi chạy Ollama (mặc định chỉ 2048 token, prompt sẽ bị cắt âm thầm)
+setx OLLAMA_CONTEXT_LENGTH 8192
+# 3) Chạy backend
+AI_PROVIDER=local AI_MODEL=qwen2.5:7b AI_BASE_URL=http://localhost:11434 AI_TIMEOUT=180s AI_MAX_CONTEXT_CHARS=8000
+```
+
+- Mô hình nhỏ trả lời chậm và kém hơn Claude, nhất là tiếng Việt và tiếng Nhật; giảm `AI_MAX_CONTEXT_CHARS` và tăng `AI_TIMEOUT`.
+- Muốn mô hình chạy trên GPU thì cần đủ VRAM (7B lượng tử hoá 4-bit cần khoảng 5 GB; thiếu thì Ollama chạy một phần trên CPU, chậm hơn).
+

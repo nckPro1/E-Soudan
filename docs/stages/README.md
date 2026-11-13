@@ -14,6 +14,7 @@
 | `stage-3.md` | Task | |
 | `stage-4.md` | Báo cáo hằng ngày | |
 | `stage-5.md` | Hoàn thiện MVP và deploy | |
+| (Định hướng) | Giao diện và nghiệp vụ theo Microsoft Teams; kế hoạch Calendar và AI | Xem `docs/PRODUCT_DIRECTION.md`. Calendar và AI mới là kế hoạch, chưa có stage. |
 | Stage 6–11 | Thông báo, chat, DM, mail, dashboard, production | **Chưa viết chi tiết.** Sẽ viết sau khi MVP chạy, vì phụ thuộc vào code thật. Trước đó dùng mục tương ứng trong `IMPLEMENTATION_PLAN.md`. |
 
 ## Ký hiệu người làm

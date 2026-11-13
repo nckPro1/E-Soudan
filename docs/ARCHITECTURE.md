@@ -58,9 +58,11 @@ com.example.<project>/
 ├── user/                    # tài khoản, hồ sơ nhân sự
 ├── team/                    # team, team_member
 ├── task/                    # task, task_history, task_submission
-├── report/                  # daily_report, report_comment
+├── report/                  # community, community_member, report_post, report_comment, report_reaction (cộng đồng báo cáo)
 ├── chat/                    # conversation, conversation_member, chat_message
-└── notification/            # notification, gửi mail
+├── notification/            # notification, gửi mail
+├── calendar/                # (kế hoạch) calendar_event, calendar_attendee — xem PRODUCT_DIRECTION.md
+└── ai/                      # (kế hoạch) ai_conversation, ai_message, LanguageModelClient — xem PRODUCT_DIRECTION.md
 ```
 
 ### 4.1 Cấu trúc bên trong một module
