@@ -349,3 +349,49 @@ Mỗi bảng quyền ở trên chuyển thẳng thành một bảng `@Parameteri
 - mỗi **ô 403** → một case "bị từ chối";
 - mỗi **tình huống biên** → một case ở mục 3 của mẫu;
 - bảng **chuyển trạng thái** (Stage 3) → mục 4 của mẫu.
+
+---
+
+## Quy tắc bổ sung đã chốt (cập nhật sau lần rà soát nghiệp vụ)
+
+Các quy tắc dưới đây **thay thế** những mục đánh dấu [Cần xác nhận] cùng chủ đề ở các stage trên. Chủ dự án đã đồng ý áp dụng các đề xuất mặc định; muốn đổi thì sửa ở đây và ở code tương ứng.
+
+### Công việc và nhóm
+
+| Tình huống | Quy tắc |
+|---|---|
+| Gỡ một người khỏi nhóm khi họ còn việc chưa xong | **Bị chặn** (409 `MEMBER_HAS_OPEN_TASKS`). Leader phải chuyển giao hoặc người đó hoàn thành việc trước |
+| Chuyển giao việc | Leader sửa việc và đổi người phụ trách. Người mới **bắt đầu lại từ ASSIGNED**, lý do trả lại cũ bị xoá, lịch sử ghi "Chuyển giao từ A sang B", người mới nhận thông báo giao việc |
+| Người nhận việc phải còn hoạt động | Không giao việc mới cho tài khoản bị khoá (422 `ASSIGNEE_INACTIVE`) |
+| Việc giao cho người sau đó bị khoá | Việc vẫn mở, hiện cảnh báo "Đã khoá" ở danh sách và chi tiết để Leader chuyển giao |
+| Hạn chót | Không được đặt ở **quá khứ** khi tạo việc hoặc khi đổi hạn (422 `INVALID_DUE_DATE`); giữ hạn cũ đã trễ thì vẫn sửa được các trường khác |
+| Observer | **Xem được** việc của nhóm, **không tải được** file nộp (giữ như bảng quyền Stage 3) |
+| Member khác trong nhóm | Xem được việc của nhau (không tải file) |
+| Nhóm đã lưu trữ | Vẫn hiện trong danh sách (lọc "Đã lưu trữ"); việc, báo cáo, lịch sử chat cũ vẫn xem được; không giao thêm, không nhắn thêm |
+| Người bị khoá còn trong nhóm | Vẫn hiện trong nhóm; không nhận việc mới, không nhận nhắc, không bị tính là chưa nộp báo cáo |
+
+### Nhắc việc và nhắc báo cáo (thông báo trong ứng dụng)
+
+- Chạy tự động theo giờ của `app.timezone`: nhắc hạn việc lúc **08:00** mỗi ngày; nhắc nộp báo cáo lúc **16:30** các ngày làm việc. Đổi bằng `app.reminders.*`.
+- **Sắp đến hạn** (hôm nay hoặc ngày mai): nhắc người phụ trách. **Quá hạn một ngày**: báo người phụ trách và các Leader của nhóm.
+- **Nhắc nộp báo cáo**: ngày làm việc, những thành viên chưa nộp (bỏ người nghỉ phép và người bị khoá).
+- Mỗi nhắc chỉ gửi **một lần mỗi ngày** cho mỗi người và mỗi đối tượng; người bị khoá không nhận nhắc. Chưa gửi email cho các nhắc này.
+
+### Báo cáo hằng ngày: ngày làm việc và nghỉ phép
+
+- **Ngày làm việc** mặc định Thứ Hai đến Thứ Sáu (`app.report.work-days`). Ngoài các ngày này không ai bị tính là "chưa nộp" và không có nhắc. Vẫn nộp được báo cáo vào cuối tuần nếu muốn.
+- **Báo nghỉ**: thành viên tự báo nghỉ từ hôm nay đến 120 ngày tới (kèm lý do tuỳ chọn), sửa hoặc bỏ được trước ngày nghỉ. Ngày nghỉ không bị tính là chưa nộp và không nhận nhắc. Chủ cộng đồng thấy danh sách "Đang nghỉ" riêng trong bảng "Chưa nộp".
+- Danh sách "Chưa nộp" không tính người đã bị khoá và người đang nghỉ.
+
+### Trò chuyện và quyền riêng tư
+
+- **Admin không xem được nhắn riêng**, không có ngoại lệ kiểm toán ở bản này. Nếu công ty cần kiểm toán, đó là một quyết định pháp lý riêng, cần ghi nhật ký truy cập.
+- Lời mời nhắn tin bị từ chối: bên mời **không mời lại được**; bên đã từ chối vẫn mời lại được.
+- Phòng chat nhóm gồm cả Observer; ai rời nhóm thì mất quyền đọc, tin cũ vẫn lưu.
+
+### Còn để ngỏ
+
+- Chuyển chủ sở hữu cộng đồng báo cáo khi Manager nghỉ việc hoặc bị khoá (chưa làm).
+- Cho Manager giao việc cho Leader, hoặc Leader tự tạo việc cho mình (hiện chỉ giao cho Member).
+- Báo cáo của ngày nghỉ lễ chung (hiện chỉ có nghỉ phép cá nhân và ngày làm việc theo tuần).
+
