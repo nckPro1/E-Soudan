@@ -41,7 +41,7 @@ REGION="${region}"
 
 aws ssm get-parameters-by-path --path "/${project}/" --with-decryption --region "$REGION" \
   --query 'Parameters[].[Name,Value]' --output text \
-  | awk -F'\t' '{ name=$1; sub(".*/", "", name); print name "=" $2 }' > .env.tmp
+  | awk -F'\t' '$2 != "DOI-GIA-TRI-NAY" { name=$1; sub(".*/", "", name); print name "=" $2 }' > .env.tmp
 mv .env.tmp .env
 chmod 600 .env
 
