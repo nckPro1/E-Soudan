@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
  * nên không thể dùng "../" để thoát khỏi thư mục gốc.
  */
 @Component
+@ConditionalOnProperty(name = "app.storage.type", havingValue = "local", matchIfMissing = true)
 public class LocalFileStorage implements FileStorage {
 
 	private static final Pattern KEY = Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");

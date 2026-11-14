@@ -35,6 +35,8 @@ dependencies {
 	implementation("org.springframework.modulith:spring-modulith-observability-api")
 	implementation("org.springframework.modulith:spring-modulith-starter-core")
 	implementation("org.springframework.modulith:spring-modulith-starter-jpa")
+	// Lưu file lên Amazon S3 (chỉ dùng khi app.storage.type=s3); quyền lấy từ IAM role của máy chủ
+	implementation("software.amazon.awssdk:s3")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 	implementation("org.mapstruct:mapstruct:$mapstructVersion")
 	// Lọc HTML của bài viết rich-text (chống XSS) trước khi lưu
@@ -67,6 +69,7 @@ dependencies {
 dependencyManagement {
 	imports {
 		mavenBom("org.springframework.modulith:spring-modulith-bom:${property("springModulithVersion")}")
+		mavenBom("software.amazon.awssdk:bom:2.29.52")
 	}
 }
 

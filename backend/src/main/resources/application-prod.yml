@@ -1,4 +1,4 @@
-# Mọi bí mật đến từ biến môi trường; thiếu thì khởi động thất bại.
+# Mọi bí mật đến từ biến môi trường; thiếu biến bắt buộc thì khởi động thất bại.
 spring:
   datasource:
     url: ${DB_URL}
@@ -9,10 +9,52 @@ spring:
     port: ${MAIL_PORT}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          # Có xác thực thì bật STARTTLS (cổng 587), như Gmail/Outlook/SMTP công ty.
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_AUTH:true}
+          connectiontimeout: 5000
+          timeout: 10000
+          writetimeout: 10000
+
+server:
+  # Chạy sau proxy (Caddy): tin các header X-Forwarded-* để biết đúng địa chỉ và giao thức (https) của người dùng.
+  forward-headers-strategy: framework
+
+# Không lộ tài liệu API ra internet ở môi trường thật.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 app:
   jwt:
     secret: ${JWT_SECRET}
   storage:
-    # Bắt buộc: thư mục lưu file nộp, ngoài mã nguồn và không phải thư mục tạm; thiếu thì khởi động thất bại.
-    dir: ${STORAGE_DIR}
+    # s3 (mặc định ở production): bắt buộc S3_BUCKET và AWS_REGION, quyền lấy từ IAM role của máy chủ.
+    # local: đặt STORAGE_TYPE=local và STORAGE_DIR (thư mục ngoài mã nguồn, được sao lưu).
+    type: ${STORAGE_TYPE:s3}
+    dir: ${STORAGE_DIR:}
+    s3-bucket: ${S3_BUCKET:}
+    s3-region: ${AWS_REGION:}
+  websocket:
+    # Địa chỉ web được phép mở WebSocket, ví dụ https://ten-mien.site (bắt buộc).
+    allowed-origins: ${WEBSOCKET_ALLOWED_ORIGINS}
+  bootstrap:
+    # Admin đầu tiên: chỉ được tạo khi hệ thống chưa có Admin nào; phải đổi mật khẩu ở lần đăng nhập đầu.
+    admin-email: ${ADMIN_EMAIL:}
+    admin-temp-password: ${ADMIN_TEMP_PASSWORD:}
+  # Môi trường demo cho người xem sản phẩm (xem docs/SETUP.md). Mặc định TẮT.
+  demo:
+    enabled: ${DEMO_ENABLED:false}
+  operating-hours:
+    enabled: ${OPERATING_HOURS_ENABLED:false}
+    start: ${OPERATING_HOURS_START:08:30}
+    end: ${OPERATING_HOURS_END:18:00}
+  reminders:
+    task-cron: ${REMINDER_TASK_CRON:0 0 8 * * *}
+    report-cron: ${REMINDER_REPORT_CRON:0 30 16 * * MON-FRI}
