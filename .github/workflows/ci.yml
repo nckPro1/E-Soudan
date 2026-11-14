@@ -1,0 +1,78 @@
+# CI: chạy test và build mỗi khi đẩy code lên main/develop hoặc mở Pull Request.
+# Repo công khai nên workflow KHÔNG dùng bí mật nào và chỉ có quyền đọc code (contents: read).
+# Dùng sự kiện pull_request (không phải pull_request_target) nên PR từ fork không lấy được bí mật.
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Đẩy commit mới lên cùng nhánh thì huỷ lần chạy cũ đang dang dở, đỡ tốn thời gian.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      # Test tích hợp dùng Testcontainers (PostgreSQL thật); runner ubuntu có sẵn Docker.
+      - name: Chạy toàn bộ test backend
+        run: ./gradlew test --no-daemon
+
+      - name: Lưu báo cáo test khi thất bại
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-report
+          path: backend/build/reports/tests/test
+          retention-days: 7
+
+  frontend:
+    name: Frontend (lint, typecheck, test, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Cài thư viện (đúng theo package-lock.json)
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Kiểm tra kiểu (vue-tsc)
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build

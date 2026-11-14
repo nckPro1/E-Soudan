@@ -318,7 +318,7 @@ describe('LoginView', () => {
       await flushPromises()
 
       expect(wrapper.find('[data-testid=demo-open]').exists()).toBe(false)
-      expect(emailInput(wrapper).exists()).toBe(true) // trang đăng nhập vẫn dùng được
+      expect(wrapper.find('#email').exists()).toBe(true) // trang đăng nhập vẫn dùng được
     })
 
     it('should_showCredentialsInPopup_andFillTheForm', async () => {
