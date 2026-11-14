@@ -2,7 +2,9 @@ package com.soudan.report.service;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
@@ -94,6 +96,20 @@ class CommunityAccess {
 		Map<Long, PersonView> result = new HashMap<>();
 		for (UserSummary u : users.findSummariesByIds(ids)) {
 			result.put(u.id(), new PersonView(u.id(), u.fullName(), u.position()));
+		}
+		return result;
+	}
+
+	/** Trong các id này, những người còn hoạt động (chưa bị khoá). */
+	Set<Long> activeIds(Collection<Long> ids) {
+		Set<Long> result = new HashSet<>();
+		if (ids.isEmpty()) {
+			return result;
+		}
+		for (UserSummary u : users.findSummariesByIds(ids)) {
+			if (u.active()) {
+				result.add(u.id());
+			}
 		}
 		return result;
 	}

@@ -14,6 +14,9 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
 	@Query("select c from Community c where c.id = :id and c.deletedAt is null")
 	Optional<Community> findLive(@Param("id") Long id);
 
+	@Query("select c from Community c where c.deletedAt is null order by c.id")
+	List<Community> findAllLive();
+
 	@Query("select c from Community c where c.ownerId = :ownerId and c.deletedAt is null order by c.name")
 	List<Community> findOwnedBy(@Param("ownerId") Long ownerId);
 

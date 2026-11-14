@@ -4,6 +4,7 @@ import type { ApiSuccess, PageResult } from '../../shared/types/api'
 import type {
   CommunityDetail,
   CommunitySummary,
+  DayOff,
   PendingReport,
   ReportComment,
   ReportInput,
@@ -42,6 +43,20 @@ export async function addMembers(id: number, userIds: number[]): Promise<Communi
 export async function removeMember(id: number, userId: number): Promise<CommunityDetail> {
   const { data } = await http.delete<ApiSuccess<CommunityDetail>>(`/communities/${id}/members/${userId}`)
   return data.data
+}
+
+export async function listDaysOff(from: string, to: string): Promise<DayOff[]> {
+  const { data } = await http.get<ApiSuccess<DayOff[]>>('/report-days-off', { params: { from, to } })
+  return data.data
+}
+
+export async function markDayOff(day: string, reason: string | null): Promise<DayOff> {
+  const { data } = await http.put<ApiSuccess<DayOff>>(`/report-days-off/${day}`, { reason })
+  return data.data
+}
+
+export async function unmarkDayOff(day: string): Promise<void> {
+  await http.delete(`/report-days-off/${day}`)
 }
 
 export async function getPending(id: number): Promise<PendingReport> {

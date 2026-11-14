@@ -30,6 +30,7 @@ import com.soudan.report.repository.CommunityRepository;
 import com.soudan.report.repository.ReportPostRepository;
 import com.soudan.report.service.ReportViews.CommunityDetail;
 import com.soudan.report.service.ReportViews.CommunitySummary;
+import com.soudan.report.repository.ReportDayOffRepository;
 import com.soudan.report.service.ReportViews.PendingView;
 import com.soudan.report.service.ReportViews.PersonView;
 import com.soudan.user.UserSummary;
@@ -45,17 +46,21 @@ public class CommunityService {
 	private final CommunityRepository communities;
 	private final CommunityMemberRepository members;
 	private final ReportPostRepository posts;
+	private final ReportDayOffRepository dayOffs;
+	private final ReportProperties properties;
 	private final CommunityAccess access;
 	private final AccessPolicy policy;
 	private final Clock clock;
 	private final ZoneId zone;
 
 	public CommunityService(CommunityRepository communities, CommunityMemberRepository members,
-			ReportPostRepository posts, CommunityAccess access, AccessPolicy policy, Clock clock,
-			@Value("${app.timezone}") String timezone) {
+			ReportPostRepository posts, ReportDayOffRepository dayOffs, ReportProperties properties,
+			CommunityAccess access, AccessPolicy policy, Clock clock, @Value("${app.timezone}") String timezone) {
 		this.communities = communities;
 		this.members = members;
 		this.posts = posts;
+		this.dayOffs = dayOffs;
+		this.properties = properties;
 		this.access = access;
 		this.policy = policy;
 		this.clock = clock;
@@ -144,18 +149,29 @@ public class CommunityService {
 		return detail(community);
 	}
 
-	/** Thành viên chưa nộp báo cáo trong ngày (mặc định hôm nay). Chỉ chủ cộng đồng xem. */
+	/**
+	 * Thành viên chưa nộp báo cáo trong ngày (mặc định hôm nay). Chỉ chủ cộng đồng xem. Không tính người đã bị khoá và
+	 * người đã báo nghỉ (họ nằm ở danh sách riêng); ngày không phải ngày làm việc thì không ai bị tính là chưa nộp.
+	 */
 	@Transactional(readOnly = true)
 	public PendingView pending(Long id, LocalDate date) {
 		access.requireOwner(id);
 		LocalDate day = date != null ? date : today();
+		if (!properties.isWorkDay(day)) {
+			return new PendingView(day, false, List.of(), List.of());
+		}
 		Set<Long> submitted = new HashSet<>(posts.authorsOfDay(id, day));
-		List<Long> missingIds = members.findByCommunityIdOrderByAddedAtAscIdAsc(id).stream()
-				.map(CommunityMember::getUserId)
-				.filter(userId -> !submitted.contains(userId))
-				.toList();
-		Map<Long, PersonView> people = access.people(missingIds);
-		return new PendingView(day, missingIds.stream().map(people::get).filter(p -> p != null).toList());
+		List<Long> memberIds = members.findByCommunityIdOrderByAddedAtAscIdAsc(id).stream()
+				.map(CommunityMember::getUserId).toList();
+		Set<Long> active = access.activeIds(memberIds);
+		Set<Long> onLeave = new HashSet<>(dayOffs.userIdsOn(day));
+		List<Long> missingIds = memberIds.stream()
+				.filter(userId -> active.contains(userId) && !submitted.contains(userId) && !onLeave.contains(userId)).toList();
+		List<Long> leaveIds = memberIds.stream()
+				.filter(userId -> active.contains(userId) && !submitted.contains(userId) && onLeave.contains(userId)).toList();
+		Map<Long, PersonView> people = access.people(memberIds);
+		return new PendingView(day, true, missingIds.stream().map(people::get).filter(p -> p != null).toList(),
+				leaveIds.stream().map(people::get).filter(p -> p != null).toList());
 	}
 
 	LocalDate today() {

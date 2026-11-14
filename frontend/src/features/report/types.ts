@@ -79,5 +79,15 @@ export interface ReportComment {
 
 export interface PendingReport {
   date: string
+  /** false: không phải ngày làm việc (cuối tuần), không ai bị tính là chưa nộp */
+  workingDay: boolean
   missing: Person[]
+  /** Đã báo nghỉ ngày này nên không bị tính là chưa nộp */
+  onLeave: Person[]
+}
+
+/** Một ngày nghỉ đã báo của chính mình. */
+export interface DayOff {
+  day: string
+  reason: string | null
 }

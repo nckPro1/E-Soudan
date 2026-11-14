@@ -87,9 +87,11 @@ public final class ReportDtos {
 		}
 	}
 
-	public record PendingResponse(LocalDate date, List<PersonResponse> missing) {
+	public record PendingResponse(LocalDate date, boolean workingDay, List<PersonResponse> missing,
+			List<PersonResponse> onLeave) {
 		static PendingResponse of(PendingView v) {
-			return new PendingResponse(v.date(), v.missing().stream().map(PersonResponse::of).toList());
+			return new PendingResponse(v.date(), v.workingDay(), v.missing().stream().map(PersonResponse::of).toList(),
+					v.onLeave().stream().map(PersonResponse::of).toList());
 		}
 	}
 }

@@ -14,6 +14,7 @@ import { colorOf, tileLabelOf } from '../../../shared/utils/avatar'
 import { useAuthStore } from '../../auth/store'
 import * as reportApi from '../api'
 import CommunityFormDialog from '../components/CommunityFormDialog.vue'
+import DayOffDialog from '../components/DayOffDialog.vue'
 import MembersDialog from '../components/MembersDialog.vue'
 import PostCard from '../components/PostCard.vue'
 import ReportComposer from '../components/ReportComposer.vue'
@@ -55,6 +56,7 @@ const scroller = ref<HTMLElement | null>(null)
 
 const community = computed(() => detail.value?.community ?? null)
 const aiSummary = ref(false)
+const dayOffOpen = ref(false)
 const aiLang = useAiLang()
 const isOwner = computed(() => community.value?.owned === true)
 const isMember = computed(() => !isOwner.value && auth.user?.systemRole === 'USER')
@@ -348,7 +350,14 @@ function openComposer() {
             :aria-label="t('report.pendingToday')"
           >
             <p
-              v-if="pending.missing.length === 0"
+              v-if="!pending.workingDay"
+              class="text-xs text-[#616161]"
+              data-testid="pending-nonworking"
+            >
+              {{ t('report.notWorkingDay') }}
+            </p>
+            <p
+              v-else-if="pending.missing.length === 0"
               class="text-xs text-[#616161]"
             >
               {{ t('report.everyoneSubmitted') }}
@@ -367,6 +376,13 @@ function openComposer() {
                 > · {{ p.position }}</span>
               </li>
             </ul>
+            <p
+              v-if="pending.onLeave.length > 0"
+              class="mt-2 border-t border-[#edebe9] pt-2 text-xs text-[#616161]"
+              data-testid="pending-leave"
+            >
+              {{ t('report.onLeave') }}: {{ pending.onLeave.map((p) => p.fullName).join(', ') }}
+            </p>
           </div>
         </div>
       </div>
@@ -448,6 +464,15 @@ function openComposer() {
               {{ t('report.viewOnly') }}
             </p>
           </div>
+          <button
+            v-if="isMine && isMember"
+            type="button"
+            class="btn shrink-0"
+            data-testid="dayoff-open"
+            @click="dayOffOpen = true"
+          >
+            {{ t('report.dayOff.open') }}
+          </button>
         </div>
 
         <!-- Chat Stream Messages Container -->
@@ -566,6 +591,11 @@ function openComposer() {
       @close="managingMembers = false"
       @changed="onCommunityChanged"
     />
+    <DayOffDialog
+      v-if="dayOffOpen"
+      @close="dayOffOpen = false"
+    />
+
     <AiSummaryDialog
       v-if="aiSummary && community"
       :title="`${t('ai.summarizeShort')}: ${community.name}`"

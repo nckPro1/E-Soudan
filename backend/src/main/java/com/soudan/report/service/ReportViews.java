@@ -38,6 +38,6 @@ public final class ReportViews {
 	}
 
 	/** Người chưa nộp báo cáo trong một ngày (chỉ chủ cộng đồng xem). */
-	public record PendingView(LocalDate date, List<PersonView> missing) {
+	public record PendingView(LocalDate date, boolean workingDay, List<PersonView> missing, List<PersonView> onLeave) {
 	}
 }

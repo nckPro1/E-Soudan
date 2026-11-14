@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.mock.web.MockMultipartFile;
@@ -28,6 +29,8 @@ import com.soudan.user.domain.User;
 
 /** Cộng đồng báo cáo: Manager tạo và thêm người, thành viên đăng báo cáo lên feed chung, mọi người trong cộng đồng thấy nhau. */
 @RecordApplicationEvents
+// Bài kiểm tra này nộp báo cáo cho "hôm nay" nên coi mọi ngày trong tuần là ngày làm việc (cuối tuần mặc định không tính chưa nộp)
+@TestPropertySource(properties = "app.report.work-days=MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY,SUNDAY")
 class CommunityReportIntegrationTest extends IntegrationTestBase {
 
 	@Autowired
