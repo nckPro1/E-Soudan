@@ -1,0 +1,25 @@
+# CHỈ để chạy thử cục bộ: thêm một Postgres trong Docker thay cho RDS.
+# Dùng:  docker compose -f docker-compose.yml -f docker-compose.local-db.yml --env-file .env up -d
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: soudan
+      POSTGRES_USER: soudan
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soudan -d soudan"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

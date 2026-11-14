@@ -1,0 +1,30 @@
+# Caddy: HTTPS tự động (Let's Encrypt) khi SITE_ADDRESS là tên miền thật; dùng http://localhost để chạy thử cục bộ.
+{$SITE_ADDRESS:http://localhost} {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	# API và WebSocket (STOMP) đi thẳng về backend; Caddy tự xử lý nâng cấp kết nối WebSocket
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+	handle /ws {
+		reverse_proxy backend:8080
+	}
+	# Chỉ lộ đúng endpoint kiểm tra sức khoẻ, không lộ các endpoint quản trị khác
+	handle /actuator/health {
+		reverse_proxy backend:8080
+	}
+
+	# Còn lại là giao diện (SPA): file nào không có thì trả index.html để router phía trình duyệt xử lý
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}
