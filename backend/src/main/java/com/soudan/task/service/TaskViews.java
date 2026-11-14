@@ -13,7 +13,8 @@ public final class TaskViews {
 	private TaskViews() {
 	}
 
-	public record PersonView(Long id, String fullName) {
+	/** {@code active} false: tài khoản đã bị khoá (việc giao cho người này cần được chuyển giao). */
+	public record PersonView(Long id, String fullName, boolean active) {
 	}
 
 	public record SubmissionView(Long id, String fileName, String contentType, long sizeBytes, Long uploadedBy,

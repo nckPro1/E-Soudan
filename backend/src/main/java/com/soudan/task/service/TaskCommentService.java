@@ -190,7 +190,7 @@ public class TaskCommentService {
 		visible.stream().filter(c -> !c.isDeleted()).forEach(c -> personIds.add(c.getAuthorId()));
 		byComment.values().forEach(list -> list.forEach(r -> personIds.add(r.getUserId())));
 		Map<Long, PersonView> people = users.findSummariesByIds(personIds).stream()
-				.collect(Collectors.toMap(UserSummary::id, u -> new PersonView(u.id(), u.fullName())));
+				.collect(Collectors.toMap(UserSummary::id, u -> new PersonView(u.id(), u.fullName(), u.active())));
 
 		Long me = currentUser.require().id();
 		List<CommentView> result = new ArrayList<>();

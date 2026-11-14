@@ -21,6 +21,10 @@ const title = ref(props.task?.title ?? '')
 const description = ref(props.task?.description ?? '')
 const assigneeId = ref<number | ''>(props.task?.assignee?.id ?? assignable.value[0]?.userId ?? '')
 const dueDate = ref(props.task?.dueDate ?? '')
+// Hạn chót mới không được ở quá khứ (giữ nguyên hạn cũ đã trễ thì vẫn lưu được các trường khác)
+const pad = (n: number) => String(n).padStart(2, '0')
+const now = new Date()
+const minDue = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 const priority = ref<TaskPriority>(props.task?.priority ?? 'MEDIUM')
 const requireFile = ref(props.task?.requireFile ?? false)
 const saving = ref(false)
@@ -131,6 +135,7 @@ async function submit() {
             id="task-due"
             v-model="dueDate"
             type="date"
+            :min="minDue"
             class="select control w-full"
             :disabled="saving"
           >

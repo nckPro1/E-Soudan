@@ -4,6 +4,8 @@ export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH'
 export interface Person {
   id: number
   fullName: string
+  /** false: tài khoản đã bị khoá (việc cần được chuyển giao) */
+  active?: boolean
 }
 
 export interface Submission {

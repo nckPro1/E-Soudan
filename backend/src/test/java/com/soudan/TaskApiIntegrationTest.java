@@ -980,4 +980,72 @@ class TaskApiIntegrationTest extends IntegrationTestBase {
 
 		commentOk(id, memberToken, "cảm ơn anh");
 	}
+
+	// ---- nghiệp vụ bổ sung: hạn chót, chuyển giao, gỡ người còn việc, người bị khoá ----
+
+	@Test
+	void should_rejectPastDueDate_when_creating() throws Exception {
+		String body = taskBody("Trễ", member, false).replace("2030-01-31", "2020-01-31");
+
+		send(post("/api/v1/teams/" + teamA + "/tasks"), leaderAToken, body)
+				.andExpect(status().isUnprocessableContent())
+				.andExpect(jsonPath("$.code").value("INVALID_DUE_DATE"));
+	}
+
+	@Test
+	void should_resetToAssignedAndLogHandover_when_reassigned() throws Exception {
+		long id = startedTask(false);
+		String body = taskBody("Viết báo cáo", member2, false).replace("}", ",\"version\":" + versionOf(id) + "}");
+
+		send(put("/api/v1/tasks/" + id), leaderAToken, body).andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.assignee.id").value(member2.getId()))
+				.andExpect(jsonPath("$.data.status").value("ASSIGNED"));
+
+		send(get("/api/v1/tasks/" + id + "/history"), leaderAToken, null)
+				.andExpect(jsonPath("$.data[2].toStatus").value("ASSIGNED"))
+				.andExpect(jsonPath("$.data[2].note").value(org.hamcrest.Matchers.containsString("Chuyển giao")));
+		// Người mới bắt đầu được, người cũ thì không
+		act(id, "start", member2Token).andExpect(status().isOk());
+	}
+
+	@Test
+	void should_blockRemovingMemberWithOpenTasks_until_handedOverOrDone() throws Exception {
+		long id = createTask("Việc dở", member, false);
+		String url = "/api/v1/teams/" + teamA + "/members/" + member.getId();
+
+		send(delete(url), adminToken, null).andExpect(status().isConflict())
+				.andExpect(jsonPath("$.code").value("MEMBER_HAS_OPEN_TASKS"));
+
+		// Chuyển giao cho người khác thì gỡ được
+		String body = taskBody("Việc dở", member2, false).replace("}", ",\"version\":" + versionOf(id) + "}");
+		send(put("/api/v1/tasks/" + id), leaderAToken, body).andExpect(status().isOk());
+		send(delete(url), adminToken, null).andExpect(status().isOk());
+	}
+
+	@Test
+	void should_allowRemovingMember_when_allTheirTasksAreDone() throws Exception {
+		long id = startedTask(false);
+		act(id, "submit-for-review", memberToken).andExpect(status().isOk());
+		act(id, "approve", leaderAToken).andExpect(status().isOk());
+
+		send(delete("/api/v1/teams/" + teamA + "/members/" + member.getId()), adminToken, null)
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void should_flagLockedAssignee_andRefuseNewAssignmentsToThem() throws Exception {
+		long id = createTask("Giao cho người sắp bị khoá", member, false);
+		send(post("/api/v1/users/" + member.getId() + "/lock"), adminToken, null).andExpect(status().isOk());
+
+		send(get("/api/v1/tasks/" + id), leaderAToken, null).andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.assignee.active").value(false));
+		// Không giao thêm việc cho người bị khoá
+		send(post("/api/v1/teams/" + teamA + "/tasks"), leaderAToken, taskBody("Mới", member, false))
+				.andExpect(status().isUnprocessableContent())
+				.andExpect(jsonPath("$.code").value("ASSIGNEE_INACTIVE"));
+		// Nhưng chuyển giao việc cũ sang người khác thì được
+		String body = taskBody("Giao cho người sắp bị khoá", member2, false).replace("}", ",\"version\":" + versionOf(id) + "}");
+		send(put("/api/v1/tasks/" + id), leaderAToken, body).andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.assignee.active").value(true));
+	}
 }

@@ -43,7 +43,15 @@ const overdue = (task: Task) => task.dueDate !== null && task.dueDate < today &&
           <td v-if="showTeam">
             {{ task.teamName ?? '' }}
           </td>
-          <td>{{ task.assignee?.fullName ?? '' }}</td>
+          <td>
+            {{ task.assignee?.fullName ?? '' }}
+            <span
+              v-if="task.assignee && task.assignee.active === false"
+              class="ml-1 rounded bg-[#c4314b]/10 px-1.5 py-px text-[0.6875rem] font-semibold text-[#c4314b]"
+              :title="t('task.assigneeLockedHint')"
+              data-testid="assignee-locked"
+            >{{ t('task.assigneeLocked') }}</span>
+          </td>
           <td :class="{ 'overdue !text-[#c4314b]': overdue(task) }">
             {{ task.dueDate ?? '' }}
             <span v-if="overdue(task)">({{ t('task.overdue') }})</span>

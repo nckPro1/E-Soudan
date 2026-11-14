@@ -229,7 +229,18 @@ async function download(file: Submission) {
           <dt class="text-[#616161]">
             {{ t('task.assignee') }}
           </dt>
-          <dd>{{ task.assignee?.fullName }}</dd>
+          <dd>
+            {{ task.assignee?.fullName }}
+            <span
+              v-if="task.assignee && task.assignee.active === false"
+              class="ml-1 rounded bg-[#c4314b]/10 px-1.5 py-px text-[0.6875rem] font-semibold text-[#c4314b]"
+              data-testid="assignee-locked"
+            >{{ t('task.assigneeLocked') }}</span>
+            <span
+              v-if="task.assignee && task.assignee.active === false"
+              class="mt-0.5 block text-xs text-[#616161]"
+            >{{ t('task.assigneeLockedHint') }}</span>
+          </dd>
           <dt class="text-[#616161]">
             {{ t('task.dueDate') }}
           </dt>

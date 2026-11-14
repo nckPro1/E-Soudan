@@ -21,6 +21,21 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 			order by case when t.dueDate is null then 1 else 0 end, t.dueDate asc, t.id asc""")
 	List<Task> openOf(@Param("me") Long me, Pageable pageable);
 
+	/** Việc chưa xong có hạn trong khoảng [from, to] (cho nhắc hạn). */
+	@Query("""
+			select t from Task t
+			where t.dueDate between :from and :to
+			  and t.status <> com.soudan.task.domain.TaskStatus.DONE and t.deletedAt is null
+			order by t.dueDate, t.id""")
+	List<Task> openDueBetween(@Param("from") java.time.LocalDate from, @Param("to") java.time.LocalDate to);
+
+	/** Số việc chưa xong của một người trong một nhóm (chặn gỡ khỏi nhóm). */
+	@Query("""
+			select count(t) from Task t
+			where t.teamId = :teamId and t.assigneeId = :userId
+			  and t.status <> com.soudan.task.domain.TaskStatus.DONE and t.deletedAt is null""")
+	long countOpenOf(@Param("teamId") Long teamId, @Param("userId") Long userId);
+
 	/** Việc người này phụ trách có thay đổi từ mốc {@code since}. */
 	@Query("""
 			select t from Task t

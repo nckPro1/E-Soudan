@@ -1,6 +1,8 @@
 package com.soudan.task.service;
 
 import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,11 +80,12 @@ public class TaskService {
 	private final AccessPolicy access;
 	private final CurrentUser currentUser;
 	private final Clock clock;
+	private final ZoneId zone;
 	private final ApplicationEventPublisher events;
 
 	public TaskService(TaskRepository tasks, TaskHistoryRepository histories, TaskSubmissionRepository submissions,
 			TeamApi teams, UserApi users, TeamMembershipLookup memberships, AccessPolicy access,
-			CurrentUser currentUser, Clock clock, ApplicationEventPublisher events) {
+			CurrentUser currentUser, Clock clock, ZoneId zone, ApplicationEventPublisher events) {
 		this.tasks = tasks;
 		this.histories = histories;
 		this.submissions = submissions;
@@ -92,6 +95,7 @@ public class TaskService {
 		this.access = access;
 		this.currentUser = currentUser;
 		this.clock = clock;
+		this.zone = zone;
 		this.events = events;
 	}
 
@@ -105,6 +109,8 @@ public class TaskService {
 			throw new ConflictException(ErrorCode.TEAM_ARCHIVED);
 		}
 		requireAssigneeIsMember(teamId, command.assigneeId());
+		requireAssigneeActive(command.assigneeId());
+		requireDueDateNotPast(command.dueDate());
 
 		Long me = currentUser.require().id();
 		Task task = Task.create(teamId, command.title(), command.description(), command.assigneeId(), me,
@@ -122,10 +128,21 @@ public class TaskService {
 		checkVersion(task, version);
 		requireAssigneeIsMember(task.getTeamId(), command.assigneeId());
 		Long previousAssignee = task.getAssigneeId();
-		task.update(command.title(), command.description(), command.assigneeId(), command.dueDate(),
-				command.priority(), command.requireFile());
+		if (!previousAssignee.equals(command.assigneeId())) {
+			requireAssigneeActive(command.assigneeId());
+		}
+		// Chỉ chặn khi Leader đặt một hạn mới nằm trong quá khứ; giữ nguyên hạn cũ đã trễ thì vẫn sửa được các trường khác
+		if (command.dueDate() != null && !command.dueDate().equals(task.getDueDate())) {
+			requireDueDateNotPast(command.dueDate());
+		}
+		TaskStatus from = task.getStatus();
+		boolean reassigned = task.update(command.title(), command.description(), command.assigneeId(),
+				command.dueDate(), command.priority(), command.requireFile());
 		tasks.saveAndFlush(task);
-		if (!previousAssignee.equals(task.getAssigneeId())) {
+		if (reassigned) {
+			Map<Long, PersonView> names = people(Set.of(previousAssignee, task.getAssigneeId()));
+			record(task, from, "Chuyển giao từ " + nameOf(names, previousAssignee) + " sang "
+					+ nameOf(names, task.getAssigneeId()));
 			publishAssigned(task);
 		}
 		return view(task);
@@ -272,6 +289,26 @@ public class TaskService {
 		}
 	}
 
+	/** Hạn chót không được ở quá khứ (so với hôm nay theo múi giờ nghiệp vụ). Không có hạn thì bỏ qua. */
+	private void requireDueDateNotPast(LocalDate dueDate) {
+		if (dueDate != null && dueDate.isBefore(LocalDate.now(clock.withZone(zone)))) {
+			throw new ValidationException(ErrorCode.INVALID_DUE_DATE, "Hạn chót không được nằm trong quá khứ");
+		}
+	}
+
+	/** Người nhận việc phải còn hoạt động; người bị khoá không nhận thêm việc. */
+	private void requireAssigneeActive(Long assigneeId) {
+		boolean active = users.findSummariesByIds(Set.of(assigneeId)).stream().anyMatch(UserSummary::active);
+		if (!active) {
+			throw new ValidationException(ErrorCode.ASSIGNEE_INACTIVE, "Người phụ trách đang bị khoá");
+		}
+	}
+
+	private static String nameOf(Map<Long, PersonView> names, Long id) {
+		PersonView person = names.get(id);
+		return person == null ? "#" + id : person.fullName();
+	}
+
 	private void requireAssigneeIsMember(Long teamId, Long assigneeId) {
 		TeamRole role = memberships.roleOf(teamId, assigneeId).orElse(null);
 		if (role != TeamRole.MEMBER) {
@@ -305,7 +342,7 @@ public class TaskService {
 	private Map<Long, PersonView> people(Set<Long> ids) {
 		Map<Long, PersonView> result = new HashMap<>();
 		for (UserSummary u : users.findSummariesByIds(new HashSet<>(ids))) {
-			result.put(u.id(), new PersonView(u.id(), u.fullName()));
+			result.put(u.id(), new PersonView(u.id(), u.fullName(), u.active()));
 		}
 		return result;
 	}

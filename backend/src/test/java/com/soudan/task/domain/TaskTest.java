@@ -151,17 +151,30 @@ class TaskTest {
 	}
 
 	@Test
-	void should_updateFieldsButNotStatus_when_notDone() {
+	void should_updateFieldsButNotStatus_when_assigneeUnchanged() {
 		Task task = inStatus(TaskStatus.IN_PROGRESS, false);
 
-		task.update("Tiêu đề mới", " mô tả ", 5L, null, null, true);
+		boolean reassigned = task.update("Tiêu đề mới", " mô tả ", task.getAssigneeId(), null, null, true);
 
+		assertThat(reassigned).isFalse();
 		assertThat(task.getTitle()).isEqualTo("Tiêu đề mới");
 		assertThat(task.getDescription()).isEqualTo("mô tả");
-		assertThat(task.getAssigneeId()).isEqualTo(5L);
 		assertThat(task.getPriority()).isEqualTo(TaskPriority.MEDIUM);
 		assertThat(task.isRequireFile()).isTrue();
 		assertThat(task.getStatus()).isEqualTo(TaskStatus.IN_PROGRESS);
+	}
+
+	@Test
+	void should_restartFromAssignedAndClearRevisionReason_when_reassigned() {
+		Task task = inStatus(TaskStatus.PENDING_REVIEW, false);
+		task.requestRevision("Thiếu số liệu");
+
+		boolean reassigned = task.update("T", null, 5L, null, null, false);
+
+		assertThat(reassigned).isTrue();
+		assertThat(task.getAssigneeId()).isEqualTo(5L);
+		assertThat(task.getStatus()).isEqualTo(TaskStatus.ASSIGNED);
+		assertThat(task.getRevisionReason()).isNull();
 	}
 
 	@Test

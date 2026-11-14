@@ -30,6 +30,7 @@ import com.soudan.common.search.SearchWhitelist.FilterRule;
 import com.soudan.common.security.AuthenticatedUser;
 import com.soudan.common.security.CurrentUser;
 import com.soudan.common.security.SystemRole;
+import com.soudan.common.security.TeamMemberRemovalGuard;
 import com.soudan.common.security.TeamRole;
 import com.soudan.team.TeamApi;
 import com.soudan.team.TeamInfo;
@@ -63,7 +64,11 @@ public class TeamService implements TeamApi {
 	private final CurrentUser currentUser;
 	private final Clock clock;
 
-	public TeamService(TeamRepository teams, UserApi users, CurrentUser currentUser, Clock clock) {
+	private final List<TeamMemberRemovalGuard> removalGuards;
+
+	public TeamService(TeamRepository teams, UserApi users, CurrentUser currentUser, Clock clock,
+			List<TeamMemberRemovalGuard> removalGuards) {
+		this.removalGuards = removalGuards;
 		this.teams = teams;
 		this.users = users;
 		this.currentUser = currentUser;
@@ -131,6 +136,11 @@ public class TeamService implements TeamApi {
 
 	public TeamDetail removeMember(Long teamId, Long userId) {
 		Team team = loadForUpdate(teamId);
+		long open = removalGuards.stream().mapToLong(g -> g.openWorkOf(teamId, userId)).sum();
+		if (open > 0) {
+			throw new ConflictException(ErrorCode.MEMBER_HAS_OPEN_TASKS,
+					"Người này còn " + open + " việc chưa xong trong nhóm, hãy chuyển giao hoặc hoàn thành trước khi gỡ");
+		}
 		team.removeMember(userId);
 		teams.saveAndFlush(team);
 		return detail(team);

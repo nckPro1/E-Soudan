@@ -75,18 +75,29 @@ public class Task extends BaseEntity {
 		return task;
 	}
 
-	/** Sửa thông tin (không đổi trạng thái). Task đã DONE thì không sửa được. */
-	public void update(String title, String description, Long assigneeId, LocalDate dueDate, TaskPriority priority,
+	/**
+	 * Sửa thông tin. Task đã DONE thì không sửa được. Đổi người phụ trách (chuyển giao) thì người mới bắt đầu lại từ
+	 * ASSIGNED và lý do trả lại cũ bị xoá, vì họ chưa làm gì.
+	 *
+	 * @return true nếu người phụ trách đã đổi
+	 */
+	public boolean update(String title, String description, Long assigneeId, LocalDate dueDate, TaskPriority priority,
 			boolean requireFile) {
 		if (status == TaskStatus.DONE) {
 			throw new ConflictException(ErrorCode.INVALID_STATE_TRANSITION, "Task đã hoàn thành, không thể sửa");
 		}
+		boolean reassigned = !this.assigneeId.equals(assigneeId);
 		this.title = requireText(title, "Tiêu đề");
 		this.description = blankToNull(description);
 		this.assigneeId = assigneeId;
+		if (reassigned) {
+			this.status = TaskStatus.ASSIGNED;
+			this.revisionReason = null;
+		}
 		this.dueDate = dueDate;
 		this.priority = priority == null ? TaskPriority.MEDIUM : priority;
 		this.requireFile = requireFile;
+		return reassigned;
 	}
 
 	/** ASSIGNED → IN_PROGRESS. */
