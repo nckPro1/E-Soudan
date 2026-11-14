@@ -1,0 +1,79 @@
+#!/bin/bash
+# Chạy MỘT LẦN khi máy được tạo lần đầu (cloud-init). Cài Docker, đặt cấu hình, và tạo dịch vụ soudan.service để mỗi lần
+# máy bật (theo lịch) tự lấy cấu hình mới từ SSM, kéo image mới nhất từ ECR và chạy hệ thống.
+set -euxo pipefail
+
+dnf install -y docker cronie
+systemctl enable --now docker
+systemctl enable --now crond
+
+# Docker Compose (plugin)
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -fsSL "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64" \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+# 2 GB swap: máy 2 GB RAM chạy Spring Boot + Caddy cần đệm khi khởi động
+if [ ! -f /swapfile ]; then
+  fallocate -l 2G /swapfile
+  chmod 600 /swapfile
+  mkswap /swapfile
+  swapon /swapfile
+  echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
+fi
+
+mkdir -p /opt/soudan
+cat > /opt/soudan/docker-compose.yml <<'COMPOSE_EOF'
+${compose}
+COMPOSE_EOF
+
+cat > /opt/soudan/backup.sh <<'BACKUP_EOF'
+${backup}
+BACKUP_EOF
+chmod +x /opt/soudan/backup.sh
+
+# Mỗi lần máy bật: lấy cấu hình từ SSM -> .env, đăng nhập ECR, kéo image mới, chạy Compose
+cat > /opt/soudan/start.sh <<'START_EOF'
+#!/bin/bash
+set -euo pipefail
+cd /opt/soudan
+REGION="${region}"
+
+aws ssm get-parameters-by-path --path "/${project}/" --with-decryption --region "$REGION" \
+  --query 'Parameters[].[Name,Value]' --output text \
+  | awk -F'\t' '{ name=$1; sub(".*/", "", name); print name "=" $2 }' > .env.tmp
+mv .env.tmp .env
+chmod 600 .env
+
+aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "${registry}"
+docker compose --env-file .env pull
+docker compose --env-file .env up -d --remove-orphans
+docker image prune -f
+START_EOF
+chmod +x /opt/soudan/start.sh
+
+cat > /etc/systemd/system/soudan.service <<'UNIT_EOF'
+[Unit]
+Description=E-Soudan (docker compose)
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=900
+ExecStart=/opt/soudan/start.sh
+ExecStop=/usr/bin/docker compose --project-directory /opt/soudan down
+
+[Install]
+WantedBy=multi-user.target
+UNIT_EOF
+
+# Sao lưu cơ sở dữ liệu ra S3 lúc 17:30 giờ Việt Nam (10:30 UTC) các ngày trong tuần, trước khi máy tắt lúc 18:00
+echo '30 10 * * 1-5 root /opt/soudan/backup.sh >> /var/log/soudan-backup.log 2>&1' > /etc/cron.d/soudan-backup
+
+systemctl daemon-reload
+systemctl enable soudan.service
+# Lần đầu: RDS có thể chưa sẵn sàng; dịch vụ thử lại ở lần bật máy kế tiếp. Không để lỗi này làm hỏng cloud-init.
+systemctl start soudan.service || true

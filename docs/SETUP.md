@@ -183,3 +183,15 @@ APP_OPERATINGHOURS_END=18:00
 - Ngày hoạt động mặc định Thứ Hai đến Thứ Sáu, múi giờ `Asia/Ho_Chi_Minh` (đổi trong `application.yml`). Không hỗ trợ khoảng giờ qua nửa đêm.
 - Người xem ở múi giờ khác (ví dụ Nhật) vẫn thấy đúng giờ Việt Nam.
 
+## Triển khai lên AWS và CI/CD
+
+- **Chạy thử như production trên máy bạn** (backend + web/Caddy + Postgres bằng Docker): xem `deploy/` (`docker-compose.yml`,
+  `docker-compose.local-db.yml`, `.env.example`).
+- **Hạ tầng AWS** (VPC, EC2, RDS, S3, IAM, Route 53, lịch bật/tắt, ngân sách): mô tả bằng Terraform ở `infra/terraform`, hướng dẫn
+  từng bước và vận hành ở [`infra/README.md`](../infra/README.md).
+- **CI** (`.github/workflows/ci.yml`): chạy test backend, lint/typecheck/test/build frontend và build image Docker khi push hoặc mở PR.
+- **CD** (`.github/workflows/deploy.yml`): sau khi CI xanh trên `main`, build image, đẩy lên ECR rồi bảo máy chủ kéo bản mới qua SSM;
+  có thể chạy tay để quay lại phiên bản cũ. Chỉ chạy khi đã đặt biến `AWS_DEPLOY_ROLE_ARN` trong GitHub.
+- Biến môi trường production: xem `backend/src/main/resources/application-prod.yml`. Ở production, `app.storage.type` mặc định là `s3`
+  (cần `S3_BUCKET`, `AWS_REGION`); `STORAGE_TYPE=local` + `STORAGE_DIR` để lưu trên ổ đĩa. Tài liệu Swagger bị tắt.
+
