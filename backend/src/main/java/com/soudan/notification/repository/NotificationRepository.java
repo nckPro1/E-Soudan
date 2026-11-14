@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.soudan.notification.domain.Notification;
+import com.soudan.notification.domain.NotificationType;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
@@ -21,6 +22,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 	Page<Notification> findUnreadOf(@Param("userId") Long userId, Pageable pageable);
 
 	long countByRecipientIdAndReadAtIsNull(Long recipientId);
+
+	/** Đã gửi nhắc cùng loại cho người này về task này kể từ mốc {@code since} chưa (chống gửi trùng khi chạy lại). */
+	boolean existsByRecipientIdAndTypeAndTaskIdAndCreatedAtAfter(Long recipientId, NotificationType type, Long taskId,
+			Instant since);
+
+	/** Tương tự, cho nhắc nộp báo cáo của một cộng đồng. */
+	boolean existsByRecipientIdAndTypeAndCommunityIdAndCreatedAtAfter(Long recipientId, NotificationType type,
+			Long communityId, Instant since);
 
 	Optional<Notification> findByIdAndRecipientId(Long id, Long recipientId);
 

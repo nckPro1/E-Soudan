@@ -1,5 +1,7 @@
 # Datasource do Testcontainers (@ServiceConnection) cấp.
 app:
+  reminders:
+    enabled: false
   storage:
     # Test ghi file vào thư mục build (tự dọn bằng gradle clean), không để rác trong mã nguồn.
     dir: build/test-uploads

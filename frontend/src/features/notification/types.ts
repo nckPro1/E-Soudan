@@ -13,6 +13,9 @@ export type NotificationType =
   | 'REPORT_COMMENT_REACTION'
   | 'CHAT_REQUEST'
   | 'CHAT_REQUEST_ACCEPTED'
+  | 'TASK_DUE_SOON'
+  | 'TASK_OVERDUE'
+  | 'REPORT_REMINDER'
 
 export interface NotificationActor {
   id: number

@@ -82,6 +82,9 @@ function setFilter(value: boolean) {
 
 /** Đường dẫn khi bấm vào một thông báo. */
 function target(n: AppNotification): RouteLocationRaw | null {
+  if (n.type === 'REPORT_REMINDER' && n.communityId !== null) {
+    return { name: 'community-feed', params: { id: n.communityId } }
+  }
   if (n.type.startsWith('TASK') && n.taskId !== null) {
     return { name: 'task-detail', params: { id: n.taskId } }
   }

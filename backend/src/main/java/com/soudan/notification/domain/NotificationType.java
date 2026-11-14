@@ -29,5 +29,11 @@ public enum NotificationType {
 	/** Có người muốn nhắn tin riêng với mình (cần mình chấp nhận) */
 	CHAT_REQUEST,
 	/** Lời mời nhắn tin của mình đã được chấp nhận */
-	CHAT_REQUEST_ACCEPTED
+	CHAT_REQUEST_ACCEPTED,
+	/** Việc mình phụ trách đến hạn hôm nay hoặc ngày mai (hệ thống nhắc) */
+	TASK_DUE_SOON,
+	/** Việc đã quá hạn (gửi cho người phụ trách và Leader nhóm) */
+	TASK_OVERDUE,
+	/** Hôm nay mình chưa nộp báo cáo trong một cộng đồng (hệ thống nhắc) */
+	REPORT_REMINDER
 }

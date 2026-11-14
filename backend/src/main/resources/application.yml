@@ -34,6 +34,11 @@ app:
   storage:
     max-file-size: 10MB
   timezone: Asia/Ho_Chi_Minh
+  # Nhắc việc và nhắc nộp báo cáo (giờ theo app.timezone). Ngày làm việc phải nộp báo cáo: app.report.work-days.
+  reminders:
+    enabled: true
+    task-cron: "0 0 8 * * *"
+    report-cron: "0 30 16 * * MON-FRI"
   # Trợ lý AI. Đặt ANTHROPIC_API_KEY để gọi Claude thật; AI_PROVIDER=mock để chạy thử giao diện không gọi ra ngoài.
   ai:
     provider: ${AI_PROVIDER:anthropic}

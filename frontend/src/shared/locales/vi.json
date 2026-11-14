@@ -67,7 +67,10 @@
     "AI_RATE_LIMITED": "Bạn đã dùng trợ lý AI quá nhiều lần trong giờ qua. Hãy thử lại sau.",
     "AI_UPSTREAM_ERROR": "Không kết nối được tới mô hình AI. Hãy thử lại sau.",
     "AI_NO_DATA": "Không có dữ liệu để xử lý trong khoảng này.",
-    "CALENDAR_TOO_MANY_NOTES": "Mỗi ngày chỉ đánh dấu được tối đa 20 ghi chú."
+    "CALENDAR_TOO_MANY_NOTES": "Mỗi ngày chỉ đánh dấu được tối đa 20 ghi chú.",
+    "MEMBER_HAS_OPEN_TASKS": "Người này còn việc chưa xong trong nhóm. Hãy chuyển giao hoặc hoàn thành các việc đó trước khi gỡ.",
+    "INVALID_DUE_DATE": "Hạn chót không được nằm trong quá khứ.",
+    "ASSIGNEE_INACTIVE": "Người phụ trách đang bị khoá, hãy chọn người khác."
   },
   "nav": {
     "label": "Điều hướng chính",
@@ -240,7 +243,9 @@
     "viewReplies": "Xem thêm {count} phản hồi",
     "whoReacted": "Ai đã thả cảm xúc",
     "editHint": "Nhấn Enter để lưu · Esc để huỷ",
-    "escToCancel": "Nhấn Esc để huỷ ·"
+    "escToCancel": "Nhấn Esc để huỷ ·",
+    "assigneeLocked": "Đã bị khoá",
+    "assigneeLockedHint": "Tài khoản người phụ trách đã bị khoá. Hãy sửa việc và chuyển giao cho người khác."
   },
   "report": {
     "title": "Báo cáo hằng ngày",
@@ -335,7 +340,20 @@
     "viewOnly": "Bạn chỉ xem được trang này. Mỗi người tự đăng và sửa báo cáo của mình.",
     "expand": "Mở danh sách thành viên",
     "collapse": "Thu gọn danh sách thành viên",
-    "noMembersYet": "Chưa có thành viên nào."
+    "noMembersYet": "Chưa có thành viên nào.",
+    "notWorkingDay": "Hôm nay không phải ngày làm việc nên không ai bị tính là chưa nộp.",
+    "onLeave": "Đang nghỉ",
+    "dayOff": {
+      "open": "Báo nghỉ",
+      "title": "Báo nghỉ",
+      "hint": "Ngày nghỉ không bị tính là chưa nộp báo cáo và bạn sẽ không nhận nhắc nộp.",
+      "date": "Ngày nghỉ",
+      "reason": "Lý do",
+      "reasonPlaceholder": "Không bắt buộc",
+      "add": "Báo nghỉ",
+      "upcoming": "Các ngày nghỉ sắp tới",
+      "none": "Bạn chưa báo nghỉ ngày nào."
+    }
   },
   "soon": {
     "badge": "Sắp có",
@@ -399,7 +417,10 @@
       "REPORT_REACTION": "{actor} đã thả {emoji} vào báo cáo của bạn: {subject}",
       "REPORT_COMMENT_REACTION": "{actor} đã thả {emoji} vào bình luận của bạn trong báo cáo: {subject}",
       "CHAT_REQUEST": "{actor} muốn nhắn tin với bạn",
-      "CHAT_REQUEST_ACCEPTED": "{actor} đã chấp nhận lời mời nhắn tin của bạn"
+      "CHAT_REQUEST_ACCEPTED": "{actor} đã chấp nhận lời mời nhắn tin của bạn",
+      "TASK_DUE_SOON": "Sắp đến hạn: {subject}",
+      "TASK_OVERDUE": "Đã quá hạn: {subject}",
+      "REPORT_REMINDER": "Hôm nay bạn chưa nộp báo cáo trong cộng đồng {subject}"
     },
     "soundLabel": "Âm thanh thông báo",
     "soundOn": "Âm thanh: bật (bấm để tắt)",

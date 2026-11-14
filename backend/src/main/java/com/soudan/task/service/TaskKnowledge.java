@@ -25,7 +25,7 @@ import com.soudan.user.UserApi;
 import com.soudan.user.UserSummary;
 
 /**
- * Công việc cho trợ lý AI. Người dùng thấy việc của các nhóm mình là thành viên và việc giao cho mình (cùng quy tắc xem
+ * Công việc cho trợ lý AI và cho việc nhắc hạn. Người dùng thấy việc của các nhóm mình là thành viên và việc giao cho mình (cùng quy tắc xem
  * task thường); Admin không dùng trợ lý nên không có dữ liệu ở đây.
  */
 @Component
@@ -58,6 +58,12 @@ class TaskKnowledge implements TaskApi, KnowledgeSource {
 	@Override
 	public List<KnowledgeDoc> myOpenTasks(int limit) {
 		return docs(tasks.openOf(currentUser.require().id(), PageRequest.of(0, limit)));
+	}
+
+	@Override
+	public List<DueTask> openTasksDueBetween(java.time.LocalDate from, java.time.LocalDate to) {
+		return tasks.openDueBetween(from, to).stream()
+				.map(t -> new DueTask(t.getId(), t.getTeamId(), t.getTitle(), t.getAssigneeId(), t.getDueDate())).toList();
 	}
 
 	@Override

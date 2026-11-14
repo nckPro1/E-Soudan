@@ -18,19 +18,25 @@ const actorName = computed(() => props.notification.actor?.fullName ?? t('notif.
 const when = computed(() => timeAgo(props.notification.createdAt, locale.value) ?? t('task.justNow'))
 const fullDate = computed(() => new Date(props.notification.createdAt).toLocaleString(locale.value))
 
+/** Nhắc của hệ thống: dòng mô tả đã đủ ý, snippet (ngày hạn) không cần hiện lại. */
+const SYSTEM_TYPES = ['TASK_DUE_SOON', 'TASK_OVERDUE', 'REPORT_REMINDER']
 const isReaction = computed(() => props.notification.type.endsWith('REACTION'))
 /** Loại có đoạn trích đáng hiển thị (bình luận, lý do trả lại); biểu cảm thì emoji đã nằm trong câu. */
-const showSnippet = computed(() => !isReaction.value && !!props.notification.snippet)
+const showSnippet = computed(
+  () => !isReaction.value && !!props.notification.snippet && !SYSTEM_TYPES.includes(props.notification.type),
+)
 
 // Huy hiệu nhỏ ở góc ảnh đại diện: tick cho task, khung chat cho bình luận, tài liệu cho báo cáo; emoji cho biểu cảm
 const BADGES = {
   task: 'M5 7l1.5 1.5L9 6M5 13l1.5 1.5L9 12M12 7h8M12 13h8',
   comment: 'M4 5h16v11H9l-5 4z',
   report: 'M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8zM14 3v5h5',
+  clock: 'M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
 }
 const badge = computed(() => {
   const type = props.notification.type
   if (type.endsWith('REACTION')) return null
+  if (type === 'TASK_DUE_SOON' || type === 'TASK_OVERDUE' || type === 'REPORT_REMINDER') return BADGES.clock
   if (type.startsWith('CHAT') || type.includes('COMMENT') || type.endsWith('REPLY')) return BADGES.comment
   return type.startsWith('TASK') ? BADGES.task : BADGES.report
 })

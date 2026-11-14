@@ -67,7 +67,10 @@
     "AI_RATE_LIMITED": "1 時間あたりの AI の利用回数を超えました。しばらくしてからお試しください。",
     "AI_UPSTREAM_ERROR": "AI モデルに接続できませんでした。しばらくしてからお試しください。",
     "AI_NO_DATA": "この期間に処理できるデータがありません。",
-    "CALENDAR_TOO_MANY_NOTES": "1 日に付けられるメモは最大 20 件です。"
+    "CALENDAR_TOO_MANY_NOTES": "1 日に付けられるメモは最大 20 件です。",
+    "MEMBER_HAS_OPEN_TASKS": "このメンバーにはチームで未完了のタスクがあります。引き継ぐか完了させてから外してください。",
+    "INVALID_DUE_DATE": "期限は過去の日付にできません。",
+    "ASSIGNEE_INACTIVE": "担当者がロックされています。別の人を選んでください。"
   },
   "nav": {
     "label": "メインナビゲーション",
@@ -240,7 +243,9 @@
     "viewReplies": "さらに{count}件の返信を表示",
     "whoReacted": "リアクションした人",
     "editHint": "Enterで保存 · Escでキャンセル",
-    "escToCancel": "Escでキャンセル ·"
+    "escToCancel": "Escでキャンセル ·",
+    "assigneeLocked": "ロック中",
+    "assigneeLockedHint": "担当者のアカウントがロックされています。タスクを編集して別の人に引き継いでください。"
   },
   "report": {
     "title": "日報",
@@ -335,7 +340,20 @@
     "viewOnly": "このページは閲覧のみです。報告の投稿と編集は本人だけができます。",
     "expand": "メンバー一覧を開く",
     "collapse": "メンバー一覧を閉じる",
-    "noMembersYet": "メンバーがいません。"
+    "noMembersYet": "メンバーがいません。",
+    "notWorkingDay": "今日は勤務日ではないため、未提出として扱われる人はいません。",
+    "onLeave": "休暇中",
+    "dayOff": {
+      "open": "休暇届",
+      "title": "休暇の届出",
+      "hint": "休暇の日は日報の未提出として扱われず、提出リマインドも届きません。",
+      "date": "休暇日",
+      "reason": "理由",
+      "reasonPlaceholder": "任意",
+      "add": "休暇を届け出る",
+      "upcoming": "今後の休暇",
+      "none": "届け出た休暇はありません。"
+    }
   },
   "soon": {
     "badge": "近日公開",
@@ -399,7 +417,10 @@
       "REPORT_REACTION": "{actor}さんがあなたの報告に {emoji} を付けました：{subject}",
       "REPORT_COMMENT_REACTION": "{actor}さんが報告のあなたのコメントに {emoji} を付けました：{subject}",
       "CHAT_REQUEST": "{actor} さんがメッセージを希望しています",
-      "CHAT_REQUEST_ACCEPTED": "{actor} さんがリクエストを承認しました"
+      "CHAT_REQUEST_ACCEPTED": "{actor} さんがリクエストを承認しました",
+      "TASK_DUE_SOON": "期限が近づいています：{subject}",
+      "TASK_OVERDUE": "期限を過ぎました：{subject}",
+      "REPORT_REMINDER": "コミュニティ「{subject}」で本日の日報が未提出です"
     },
     "soundLabel": "通知音",
     "soundOn": "通知音：オン（クリックでオフ）",

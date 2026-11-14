@@ -67,7 +67,10 @@
     "AI_RATE_LIMITED": "You have used the AI assistant too many times this hour. Please try again later.",
     "AI_UPSTREAM_ERROR": "Could not reach the AI model. Please try again later.",
     "AI_NO_DATA": "There is no data to process for this period.",
-    "CALENDAR_TOO_MANY_NOTES": "You can mark at most 20 notes per day."
+    "CALENDAR_TOO_MANY_NOTES": "You can mark at most 20 notes per day.",
+    "MEMBER_HAS_OPEN_TASKS": "This person still has unfinished tasks in the team. Hand them over or finish them before removing.",
+    "INVALID_DUE_DATE": "The due date cannot be in the past.",
+    "ASSIGNEE_INACTIVE": "The assignee is locked, please choose someone else."
   },
   "nav": {
     "label": "Main navigation",
@@ -240,7 +243,9 @@
     "viewReplies": "View {count} more replies",
     "whoReacted": "Who reacted",
     "editHint": "Enter to save · Esc to cancel",
-    "escToCancel": "Press Esc to cancel ·"
+    "escToCancel": "Press Esc to cancel ·",
+    "assigneeLocked": "Locked",
+    "assigneeLockedHint": "The assignee's account is locked. Edit the task and hand it over to someone else."
   },
   "report": {
     "title": "Daily reports",
@@ -335,7 +340,20 @@
     "viewOnly": "You can only view this page. Everyone posts and edits their own reports.",
     "expand": "Show members",
     "collapse": "Hide members",
-    "noMembersYet": "No members yet."
+    "noMembersYet": "No members yet.",
+    "notWorkingDay": "Today is not a working day, so nobody counts as missing.",
+    "onLeave": "On leave",
+    "dayOff": {
+      "open": "Day off",
+      "title": "Mark a day off",
+      "hint": "A day off does not count as a missing report and you will not get a reminder.",
+      "date": "Day off",
+      "reason": "Reason",
+      "reasonPlaceholder": "Optional",
+      "add": "Mark day off",
+      "upcoming": "Upcoming days off",
+      "none": "You have not marked any day off."
+    }
   },
   "soon": {
     "badge": "Coming soon",
@@ -399,7 +417,10 @@
       "REPORT_REACTION": "{actor} reacted {emoji} to your report: {subject}",
       "REPORT_COMMENT_REACTION": "{actor} reacted {emoji} to your comment on a report: {subject}",
       "CHAT_REQUEST": "{actor} wants to message you",
-      "CHAT_REQUEST_ACCEPTED": "{actor} accepted your message request"
+      "CHAT_REQUEST_ACCEPTED": "{actor} accepted your message request",
+      "TASK_DUE_SOON": "Due soon: {subject}",
+      "TASK_OVERDUE": "Overdue: {subject}",
+      "REPORT_REMINDER": "You have not submitted today's report in the community {subject}"
     },
     "soundLabel": "Notification sound",
     "soundOn": "Sound on (click to mute)",
