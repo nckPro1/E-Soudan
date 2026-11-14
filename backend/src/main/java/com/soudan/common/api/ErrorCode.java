@@ -50,6 +50,7 @@ public enum ErrorCode {
 	MEMBER_HAS_OPEN_TASKS(HttpStatus.CONFLICT, "Người này còn việc chưa xong trong nhóm, hãy chuyển giao hoặc hoàn thành trước khi gỡ"),
 	INVALID_DUE_DATE(HttpStatus.UNPROCESSABLE_CONTENT, "Hạn chót không được nằm trong quá khứ"),
 	ASSIGNEE_INACTIVE(HttpStatus.UNPROCESSABLE_CONTENT, "Người phụ trách đang bị khoá hoặc không còn hoạt động"),
+	DEMO_ACCOUNT_PROTECTED(HttpStatus.FORBIDDEN, "Tài khoản demo dùng chung nên không đổi được mật khẩu"),
 	VALIDATION_ERROR(HttpStatus.UNPROCESSABLE_CONTENT, "Dữ liệu không hợp lệ"),
 	CURRENT_PASSWORD_INCORRECT(HttpStatus.UNPROCESSABLE_CONTENT, "Mật khẩu hiện tại không đúng"),
 	INVALID_FILTER(HttpStatus.UNPROCESSABLE_CONTENT, "Trường lọc không được phép"),

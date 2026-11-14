@@ -302,4 +302,100 @@ describe('LoginView', () => {
       expect(banner(wrapper).exists()).toBe(false)
     })
   })
+
+  describe('demo account', () => {
+    it('should_hideDemoButton_when_serverHasDemoDisabled', async () => {
+      vi.mocked(api.getDemoAccount).mockResolvedValue({ enabled: false, email: '', password: '' })
+      const { wrapper } = await mountLogin()
+      await flushPromises()
+
+      expect(wrapper.find('[data-testid=demo-open]').exists()).toBe(false)
+    })
+
+    it('should_hideDemoButton_when_requestFails', async () => {
+      vi.mocked(api.getDemoAccount).mockRejectedValue(new Error('offline'))
+      const { wrapper } = await mountLogin()
+      await flushPromises()
+
+      expect(wrapper.find('[data-testid=demo-open]').exists()).toBe(false)
+      expect(emailInput(wrapper).exists()).toBe(true) // trang đăng nhập vẫn dùng được
+    })
+
+    it('should_showCredentialsInPopup_andFillTheForm', async () => {
+      vi.mocked(api.getDemoAccount).mockResolvedValue({ enabled: true, email: 'demo@soudan.local', password: '12345678' })
+      const { wrapper } = await mountLogin()
+      await flushPromises()
+
+      await wrapper.get('[data-testid=demo-open]').trigger('click')
+      expect(wrapper.text()).toContain('demo@soudan.local')
+      expect(wrapper.text()).toContain('12345678')
+
+      await wrapper.get('[data-testid=demo-fill]').trigger('click')
+      await flushPromises()
+
+      expect((emailInput(wrapper).element as HTMLInputElement).value).toBe('demo@soudan.local')
+      expect((passwordInput(wrapper).element as HTMLInputElement).value).toBe('12345678')
+    })
+  })
+
+  describe('operating hours', () => {
+    const hours = { start: '08:30', end: '18:00', days: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'] as const, timezone: 'Asia/Ho_Chi_Minh' }
+
+    it('should_notShowHours_when_machineRunsAllDay', async () => {
+      vi.mocked(api.getPublicInfo).mockResolvedValue({ operatingHours: null })
+      const { wrapper } = await mountLogin()
+      await flushPromises()
+
+      expect(wrapper.find('[data-testid=operating-hours]').exists()).toBe(false)
+    })
+
+    it('should_showScheduleAndClosingWarning_whenOpenAndNearClosing', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date('2026-11-16T17:15:00+07:00')) // Thứ Hai, còn 45 phút
+      try {
+        vi.mocked(api.getPublicInfo).mockResolvedValue({ operatingHours: { ...hours, days: [...hours.days] } })
+        const { wrapper } = await mountLogin()
+        await flushPromises()
+
+        const box = wrapper.get('[data-testid=operating-hours]')
+        expect(box.text()).toContain('08:30 – 18:00')
+        expect(box.text()).toContain('Monday – Friday')
+        expect(box.text()).toContain('Vietnam time')
+        expect(wrapper.get('[data-testid=hours-closing]').text()).toContain('45 min')
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('should_saySoClosed_whenOutsideHours', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date('2026-11-14T10:00:00+07:00')) // Thứ Bảy
+      try {
+        vi.mocked(api.getPublicInfo).mockResolvedValue({ operatingHours: { ...hours, days: [...hours.days] } })
+        const { wrapper } = await mountLogin()
+        await flushPromises()
+
+        expect(wrapper.find('[data-testid=hours-closed]').exists()).toBe(true)
+        expect(wrapper.find('[data-testid=hours-closing]').exists()).toBe(false)
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('should_notWarnYet_whenPlentyOfTimeLeft', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date('2026-11-16T10:00:00+07:00'))
+      try {
+        vi.mocked(api.getPublicInfo).mockResolvedValue({ operatingHours: { ...hours, days: [...hours.days] } })
+        const { wrapper } = await mountLogin()
+        await flushPromises()
+
+        expect(wrapper.find('[data-testid=operating-hours]').exists()).toBe(true)
+        expect(wrapper.find('[data-testid=hours-closing]').exists()).toBe(false)
+        expect(wrapper.find('[data-testid=hours-closed]').exists()).toBe(false)
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+  })
 })

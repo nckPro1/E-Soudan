@@ -168,3 +168,18 @@ AI_PROVIDER=local AI_MODEL=qwen2.5:7b AI_BASE_URL=http://localhost:11434 AI_TIME
 - Dev: mặc định `~/.soudan/uploads`; đổi bằng `STORAGE_DIR`.
 - Prod: **bắt buộc** đặt `STORAGE_DIR` (thư mục ngoài mã nguồn, được sao lưu); thiếu thì ứng dụng không khởi động.
 - Test tự ghi vào `backend/build/test-uploads`.
+
+## Giờ hoạt động hiện ở trang đăng nhập
+
+Khi máy chủ được bật/tắt theo lịch (ví dụ bản demo trên AWS), trang đăng nhập có thể hiện "Hệ thống hoạt động 08:30 – 18:00, Thứ Hai – Thứ Sáu (giờ Việt Nam)" kèm cảnh báo khi sắp tắt hoặc đang ngoài giờ.
+
+```
+APP_OPERATINGHOURS_ENABLED=true    # mặc định tắt (máy chạy cả ngày thì không hiện gì)
+APP_OPERATINGHOURS_START=08:30
+APP_OPERATINGHOURS_END=18:00
+```
+
+- Đây **chỉ là phần hiển thị**; việc bật/tắt máy thật do lịch ở hạ tầng quyết định, nên hai nơi phải khớp nhau.
+- Ngày hoạt động mặc định Thứ Hai đến Thứ Sáu, múi giờ `Asia/Ho_Chi_Minh` (đổi trong `application.yml`). Không hỗ trợ khoảng giờ qua nửa đêm.
+- Người xem ở múi giờ khác (ví dụ Nhật) vẫn thấy đúng giờ Việt Nam.
+

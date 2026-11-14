@@ -26,8 +26,14 @@ public class MeController {
 	private final UserService userService;
 	private final UserMapper mapper;
 	private final AccessPolicy accessPolicy;
+	private final boolean demoEnabled;
+	private final String demoEmail;
 
-	public MeController(CurrentUser currentUser, UserService userService, UserMapper mapper, AccessPolicy accessPolicy) {
+	public MeController(CurrentUser currentUser, UserService userService, UserMapper mapper, AccessPolicy accessPolicy,
+			@org.springframework.beans.factory.annotation.Value("${app.demo.enabled:false}") boolean demoEnabled,
+			@org.springframework.beans.factory.annotation.Value("${app.demo.email:demo@soudan.local}") String demoEmail) {
+		this.demoEnabled = demoEnabled;
+		this.demoEmail = demoEmail;
 		this.currentUser = currentUser;
 		this.userService = userService;
 		this.mapper = mapper;
@@ -48,6 +54,10 @@ public class MeController {
 	@PostMapping("/change-password")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+		// Tài khoản demo dùng chung với mật khẩu công khai: không cho đổi để người sau vẫn đăng nhập được
+		if (demoEnabled && userService.get(currentUser.require().id()).getEmail().equalsIgnoreCase(demoEmail)) {
+			throw new com.soudan.common.exception.ForbiddenException(com.soudan.common.api.ErrorCode.DEMO_ACCOUNT_PROTECTED);
+		}
 		userService.changePassword(currentUser.require().id(), request.currentPassword(), request.newPassword());
 	}
 }

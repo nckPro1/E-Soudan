@@ -14,7 +14,26 @@
     "support": "ログインできない場合は、管理者にお問い合わせください。",
     "sessionExpired": "セッションの有効期限が切れました。もう一度ログインしてください。",
     "useAnotherAccount": "別のアカウントを使用",
-    "signOut": "ログアウト"
+    "signOut": "ログアウト",
+    "demo": {
+      "button": "デモアカウントを取得",
+      "hint": "製品をご覧になる方向け：サンプルデータ入りで自由に試せます。",
+      "title": "デモアカウント",
+      "intro": "このアカウントでシステムの機能（タスク、日報、チャット、カレンダー、AI アシスタント）を試せます。",
+      "fill": "ログインフォームに入力",
+      "noteRole": "メンバー権限で、すべての機能のサンプルデータが入っています。",
+      "noteShared": "共用アカウントのため他の人がデータを変更することがあります。サンプルデータは毎日 03:00 に初期化されます。",
+      "notePassword": "このアカウントのパスワードは変更できません。"
+    },
+    "hours": {
+      "title": "システム稼働時間 {start} – {end}",
+      "line": "{days}（{tz}）。この時間外は自動的に停止し、アクセスできません。",
+      "vn": "ベトナム時間",
+      "closesIn": "あと {time} でシステムが自動停止します。",
+      "closedNow": "現在は稼働時間外です。稼働時間内に再度アクセスしてください。",
+      "hm": "{h} 時間 {m} 分",
+      "m": "{m} 分"
+    }
   },
   "changePassword": {
     "title": "パスワード変更",
@@ -70,7 +89,8 @@
     "CALENDAR_TOO_MANY_NOTES": "1 日に付けられるメモは最大 20 件です。",
     "MEMBER_HAS_OPEN_TASKS": "このメンバーにはチームで未完了のタスクがあります。引き継ぐか完了させてから外してください。",
     "INVALID_DUE_DATE": "期限は過去の日付にできません。",
-    "ASSIGNEE_INACTIVE": "担当者がロックされています。別の人を選んでください。"
+    "ASSIGNEE_INACTIVE": "担当者がロックされています。別の人を選んでください。",
+    "DEMO_ACCOUNT_PROTECTED": "共用のデモアカウントはパスワードを変更できません。"
   },
   "nav": {
     "label": "メインナビゲーション",
@@ -508,7 +528,6 @@
       "plan": "私の計画",
       "write": "文章支援"
     },
-    "privacy": "AI は閲覧権限のあるデータ（日報、タスク、チームチャット、自分のカレンダーのメモ）だけを読みます。個人チャットは、あなたが要約を選んだ場合を除き読みません。",
     "disclaimer": "AI による生成です。素早く読むためのもので、下の出典を確認してからご利用ください。",
     "thinking": "AI が処理中です...",
     "retry": "やり直す",
@@ -560,5 +579,70 @@
       "CHAT": "チャット",
       "NOTE": "カレンダー"
     }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "おはようございます、{name} さん",
+      "afternoon": "こんにちは、{name} さん",
+      "evening": "こんばんは、{name} さん"
+    },
+    "stats": {
+      "openTasks": "進行中のタスク",
+      "attention": "期限超過",
+      "reportsToday": "今日の日報",
+      "unread": "未読",
+      "communities": "管理コミュニティ",
+      "missingToday": "今日の未提出",
+      "onLeave": "休暇中",
+      "accounts": "アカウント",
+      "locked": "ロック中",
+      "teams": "有効なチーム",
+      "calendar": "カレンダー"
+    },
+    "waitingReview": "{count} 件が承認待ち",
+    "attentionHint": "期限間近 {count} 件",
+    "noCommunity": "参加している日報コミュニティがありません。",
+    "submittedHint": "コミュニティで提出済み",
+    "unreadHint": "チャット {chat} · アクティビティ {activity}",
+    "attentionTasks": "要注意のタスク",
+    "noTasks": "未完了のタスクはありません。",
+    "noDue": "期限なし",
+    "overdueDays": "{count} 日超過",
+    "dueToday": "今日",
+    "dueTomorrow": "明日",
+    "seeAll": "すべて見る",
+    "recentActivity": "最近のアクティビティ",
+    "reportsToday": "今日の日報",
+    "writeReport": "日報を書く",
+    "viewReport": "見る",
+    "reportState": {
+      "submitted": "提出済み",
+      "leave": "休暇中",
+      "missing": "未提出"
+    },
+    "upcoming": "今後 7 日間",
+    "openCalendar": "カレンダーを開く",
+    "noNotes": "今後 7 日間のメモはありません。",
+    "partialError": "一部のデータを読み込めませんでした。ページを再読み込みしてください。",
+    "missingHint": "確認が必要なメンバー",
+    "notWorkingDay": "今日は勤務日ではありません",
+    "onLeaveHint": "今日の休暇届",
+    "reportsByCommunity": "コミュニティ別の今日の日報",
+    "noOwnedCommunity": "作成した日報コミュニティがありません。",
+    "submittedShort": "提出済み",
+    "notWorkingDayShort": "休み",
+    "missing": "未提出",
+    "observedTeams": "見守っているチーム",
+    "noTeams": "見守っているチームはありません。",
+    "accountsHint": "マネージャー {managers} · メンバー {members}",
+    "lockedHint": "要確認",
+    "archivedHint": "アーカイブ {count}",
+    "open": "開く",
+    "calendarHint": "個人メモ",
+    "adminShortcuts": "管理",
+    "manageAccounts": "アカウント管理",
+    "manageAccountsHint": "作成・ロック・ロール変更",
+    "manageTeams": "チーム管理",
+    "manageTeamsHint": "チーム作成・メンバー追加・アーカイブ"
   }
 }

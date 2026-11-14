@@ -14,7 +14,26 @@
     "support": "Không đăng nhập được? Hãy liên hệ quản trị viên.",
     "sessionExpired": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
     "useAnotherAccount": "Dùng tài khoản khác",
-    "signOut": "Đăng xuất"
+    "signOut": "Đăng xuất",
+    "demo": {
+      "button": "Lấy account demo",
+      "hint": "Dành cho người xem sản phẩm: có sẵn dữ liệu mẫu để tự thử.",
+      "title": "Tài khoản demo",
+      "intro": "Dùng tài khoản này để tự thử các tính năng của hệ thống (công việc, báo cáo, trò chuyện, lịch, trợ lý AI).",
+      "fill": "Điền vào form đăng nhập",
+      "noteRole": "Vai trò Thành viên, đã có sẵn dữ liệu mẫu của mọi tính năng.",
+      "noteShared": "Tài khoản dùng chung nên dữ liệu có thể bị người khác thay đổi; hệ thống làm mới dữ liệu mẫu mỗi ngày lúc 03:00.",
+      "notePassword": "Không đổi được mật khẩu của tài khoản này."
+    },
+    "hours": {
+      "title": "Hệ thống hoạt động {start} – {end}",
+      "line": "{days} ({tz}). Ngoài giờ này hệ thống tự tắt nên không truy cập được.",
+      "vn": "giờ Việt Nam",
+      "closesIn": "Hệ thống sẽ tự tắt sau {time}.",
+      "closedNow": "Hiện đang ngoài giờ hoạt động, hãy quay lại trong giờ làm việc.",
+      "hm": "{h} giờ {m} phút",
+      "m": "{m} phút"
+    }
   },
   "changePassword": {
     "title": "Đổi mật khẩu",
@@ -70,7 +89,8 @@
     "CALENDAR_TOO_MANY_NOTES": "Mỗi ngày chỉ đánh dấu được tối đa 20 ghi chú.",
     "MEMBER_HAS_OPEN_TASKS": "Người này còn việc chưa xong trong nhóm. Hãy chuyển giao hoặc hoàn thành các việc đó trước khi gỡ.",
     "INVALID_DUE_DATE": "Hạn chót không được nằm trong quá khứ.",
-    "ASSIGNEE_INACTIVE": "Người phụ trách đang bị khoá, hãy chọn người khác."
+    "ASSIGNEE_INACTIVE": "Người phụ trách đang bị khoá, hãy chọn người khác.",
+    "DEMO_ACCOUNT_PROTECTED": "Tài khoản demo dùng chung nên không đổi được mật khẩu."
   },
   "nav": {
     "label": "Điều hướng chính",
@@ -508,7 +528,6 @@
       "plan": "Kế hoạch của tôi",
       "write": "Viết hộ"
     },
-    "privacy": "AI chỉ đọc dữ liệu bạn được phép xem (báo cáo, công việc, chat nhóm, ghi chú lịch của bạn). Không đọc nhắn riêng trừ khi bạn chủ động bấm tóm tắt cuộc đó.",
     "disclaimer": "Do AI tạo, chỉ để đọc nhanh. Hãy kiểm tra lại qua các nguồn bên dưới trước khi dựa vào.",
     "thinking": "AI đang xử lý...",
     "retry": "Làm lại",
@@ -560,5 +579,70 @@
       "CHAT": "Trò chuyện",
       "NOTE": "Lịch"
     }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Chào buổi sáng, {name}",
+      "afternoon": "Chào buổi chiều, {name}",
+      "evening": "Chào buổi tối, {name}"
+    },
+    "stats": {
+      "openTasks": "Việc đang làm",
+      "attention": "Việc quá hạn",
+      "reportsToday": "Báo cáo hôm nay",
+      "unread": "Chưa đọc",
+      "communities": "Cộng đồng quản lý",
+      "missingToday": "Chưa nộp hôm nay",
+      "onLeave": "Đang nghỉ",
+      "accounts": "Tài khoản",
+      "locked": "Đang bị khoá",
+      "teams": "Nhóm hoạt động",
+      "calendar": "Lịch"
+    },
+    "waitingReview": "{count} đang chờ duyệt",
+    "attentionHint": "{count} việc sắp đến hạn",
+    "noCommunity": "Bạn chưa thuộc cộng đồng báo cáo nào.",
+    "submittedHint": "cộng đồng đã nộp",
+    "unreadHint": "Tin nhắn {chat} · Hoạt động {activity}",
+    "attentionTasks": "Việc cần chú ý",
+    "noTasks": "Bạn không có việc nào đang mở. Tuyệt vời!",
+    "noDue": "Không có hạn",
+    "overdueDays": "Trễ {count} ngày",
+    "dueToday": "Hôm nay",
+    "dueTomorrow": "Ngày mai",
+    "seeAll": "Xem tất cả",
+    "recentActivity": "Hoạt động gần đây",
+    "reportsToday": "Báo cáo hôm nay",
+    "writeReport": "Viết báo cáo",
+    "viewReport": "Xem",
+    "reportState": {
+      "submitted": "Đã nộp",
+      "leave": "Đang nghỉ",
+      "missing": "Chưa nộp"
+    },
+    "upcoming": "Lịch 7 ngày tới",
+    "openCalendar": "Mở lịch",
+    "noNotes": "Không có ghi chú nào trong 7 ngày tới.",
+    "partialError": "Một số dữ liệu chưa tải được, hãy thử tải lại trang.",
+    "missingHint": "thành viên cần nhắc",
+    "notWorkingDay": "Hôm nay không phải ngày làm việc",
+    "onLeaveHint": "đã báo nghỉ hôm nay",
+    "reportsByCommunity": "Báo cáo hôm nay theo cộng đồng",
+    "noOwnedCommunity": "Bạn chưa tạo cộng đồng báo cáo nào.",
+    "submittedShort": "đã nộp",
+    "notWorkingDayShort": "Ngày nghỉ",
+    "missing": "Chưa nộp",
+    "observedTeams": "Nhóm bạn theo dõi",
+    "noTeams": "Bạn chưa theo dõi nhóm nào.",
+    "accountsHint": "{managers} quản lý · {members} thành viên",
+    "lockedHint": "cần xem xét",
+    "archivedHint": "{count} đã lưu trữ",
+    "open": "Mở",
+    "calendarHint": "ghi chú cá nhân",
+    "adminShortcuts": "Việc quản trị",
+    "manageAccounts": "Quản lý tài khoản",
+    "manageAccountsHint": "Tạo, khoá, đổi vai trò",
+    "manageTeams": "Quản lý nhóm",
+    "manageTeamsHint": "Dựng nhóm, thêm thành viên, lưu trữ"
   }
 }

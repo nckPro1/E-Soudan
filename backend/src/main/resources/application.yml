@@ -35,6 +35,18 @@ app:
     max-file-size: 10MB
   timezone: Asia/Ho_Chi_Minh
   # Nhắc việc và nhắc nộp báo cáo (giờ theo app.timezone). Ngày làm việc phải nộp báo cáo: app.report.work-days.
+  # Tài khoản demo cho người xem sản phẩm tự thử nghiệp vụ. TẮT mặc định; chỉ bật ở môi trường demo/dev, không bật ở production.
+  # Giờ hoạt động hiện ở trang đăng nhập khi máy chủ bật/tắt theo lịch (chỉ để hiển thị; lịch thật nằm ở hạ tầng, phải khớp).
+  # Bật bằng APP_OPERATINGHOURS_ENABLED=true; đổi giờ bằng APP_OPERATINGHOURS_START / _END.
+  operating-hours:
+    enabled: false
+    start: "08:30"
+    end: "18:00"
+    timezone: Asia/Ho_Chi_Minh
+  demo:
+    enabled: false
+    email: demo@soudan.local
+    password: "12345678"
   reminders:
     enabled: true
     task-cron: "0 0 8 * * *"

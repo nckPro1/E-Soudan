@@ -29,6 +29,9 @@ spring:
           writetimeout: 10000
 
 app:
+  demo:
+    # Dev bật sẵn để thử nút "Lấy account demo"; dữ liệu mẫu được làm mới mỗi lần khởi động và lúc 03:00 mỗi ngày
+    enabled: true
   storage:
     # File nộp lưu ngoài thư mục mã nguồn. Đặt STORAGE_DIR để đổi.
     dir: ${STORAGE_DIR:${user.home}/.soudan/uploads}
