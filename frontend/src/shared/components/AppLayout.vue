@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted } from 'vue'
-import { RouterView, useRoute, useRouter } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import NavRail from './NavRail.vue'
 import UserMenu from './UserMenu.vue'
@@ -60,12 +60,15 @@ async function signOut() {
     <header class="h-[2.75rem] bg-[#edebe9]/80 backdrop-blur-md flex items-center justify-between px-3 shrink-0 border-b border-[#e1dfdd] text-xs">
       <!-- Left side controls / navigation -->
       <div class="flex items-center space-x-3 w-1/4">
-        <div
-          class="w-6 h-6 flex items-center justify-center rounded bg-[#4f52b2] text-white font-bold text-xs shadow-sm"
-          aria-hidden="true"
+        <RouterLink
+          :to="{ name: 'home' }"
+          class="w-6 h-6 flex items-center justify-center rounded bg-[#4f52b2] text-white font-bold text-xs shadow-sm hover:brightness-110 focus-visible:ring-2 focus-visible:ring-[#4f52b2] focus-visible:ring-offset-2"
+          :aria-label="t('nav.home')"
+          :title="t('nav.home')"
+          data-testid="logo-home"
         >
           報
-        </div>
+        </RouterLink>
         <div class="flex items-center space-x-1 text-[#616161] max-md:hidden">
           <button
             type="button"

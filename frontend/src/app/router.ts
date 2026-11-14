@@ -17,7 +17,12 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('../shared/components/AppLayout.vue'),
     children: [
-      { path: '', name: 'home', component: () => import('./HomeView.vue') },
+      {
+        path: '',
+        name: 'home',
+        component: () => import('../features/dashboard/views/DashboardView.vue'),
+        meta: { fullBleed: true },
+      },
       ...userRoutes,
       ...teamRoutes,
       ...taskRoutes,

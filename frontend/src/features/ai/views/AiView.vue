@@ -81,9 +81,6 @@ function select(next: Tool) {
           {{ t(`ai.tools.${item}`) }}
         </button>
       </nav>
-      <p class="mt-auto px-4 pb-4 text-[0.6875rem] leading-snug text-[#616161] max-md:hidden">
-        {{ t('ai.privacy') }}
-      </p>
     </aside>
 
     <section class="flex min-h-0 min-w-0 flex-1 flex-col bg-white">

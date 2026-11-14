@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter, type RouteLocationRaw } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AlertBanner from '../../../shared/components/AlertBanner.vue'
 import { toApiError } from '../../../shared/api/http'
@@ -8,6 +8,7 @@ import * as notificationApi from '../api'
 import NotificationItem from '../components/NotificationItem.vue'
 import { useNotificationStore } from '../store'
 import type { AppNotification } from '../types'
+import { notificationTarget } from '../target'
 
 /**
  * Mục Hoạt động: toàn bộ thông báo gửi cho mình (task, bình luận, biểu cảm, báo cáo), mới nhất trước. Có bộ lọc "Chưa
@@ -80,23 +81,6 @@ function setFilter(value: boolean) {
   void load()
 }
 
-/** Đường dẫn khi bấm vào một thông báo. */
-function target(n: AppNotification): RouteLocationRaw | null {
-  if (n.type === 'REPORT_REMINDER' && n.communityId !== null) {
-    return { name: 'community-feed', params: { id: n.communityId } }
-  }
-  if (n.type.startsWith('TASK') && n.taskId !== null) {
-    return { name: 'task-detail', params: { id: n.taskId } }
-  }
-  if (n.type.startsWith('REPORT') && n.communityId !== null && n.postAuthorId !== null) {
-    return { name: 'member-reports', params: { id: n.communityId, userId: n.postAuthorId } }
-  }
-  if (n.type.startsWith('CHAT') && n.conversationId !== null) {
-    return { name: 'chat-conversation', params: { id: n.conversationId } }
-  }
-  return null
-}
-
 async function open(n: AppNotification) {
   if (!n.read) {
     try {
@@ -107,7 +91,7 @@ async function open(n: AppNotification) {
       errorCode.value = toApiError(error).code
     }
   }
-  const to = target(n)
+  const to = notificationTarget(n)
   if (to) await router.push(to)
 }
 
