@@ -1,0 +1,13 @@
+.git
+.github
+.claude
+.codex
+backend
+docs
+design
+scripts
+**/node_modules
+**/dist
+**/build
+.env
+**/.env

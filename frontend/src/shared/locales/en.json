@@ -105,6 +105,7 @@
     "calendar": "Calendar",
     "ai": "AI",
     "people": "People",
+    "cicdTest": "CI/CD test",
     "language": "Language",
     "back": "Back",
     "forward": "Forward",
@@ -501,6 +502,10 @@
     "requestIncoming": "{name} wants to message you.",
     "openChat": "Open chat",
     "requestDeclined": "{name} declined your message request."
+  },
+  "cicdTest": {
+    "title": "CI/CD test",
+    "body": "This page only exists to test the CI/CD pipeline and has no feature. If you can see it on the live site, the new version was deployed."
   },
   "calendar": {
     "today": "Today",

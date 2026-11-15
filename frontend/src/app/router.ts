@@ -9,6 +9,7 @@ import { chatRoutes } from '../features/chat/routes'
 import { notificationRoutes } from '../features/notification/routes'
 import { calendarRoutes } from '../features/calendar/routes'
 import { aiRoutes } from '../features/ai/routes'
+import { cicdTestRoutes } from '../features/cicdtest/routes'
 
 const routes: RouteRecordRaw[] = [
   ...authRoutes,
@@ -31,6 +32,7 @@ const routes: RouteRecordRaw[] = [
       ...notificationRoutes,
       ...calendarRoutes,
       ...aiRoutes,
+      ...cicdTestRoutes,
     ],
   },
 ]

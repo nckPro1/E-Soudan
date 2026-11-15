@@ -1,0 +1,40 @@
+# Chạy hệ thống trên một máy (EC2): backend + web (Caddy). Cơ sở dữ liệu là RDS nên không nằm trong file này.
+# Dùng:  docker compose --env-file .env up -d
+# Chạy thử cục bộ có cả Postgres: thêm  -f docker-compose.local-db.yml  (xem deploy/README.md).
+services:
+  backend:
+    image: ${BACKEND_IMAGE:-soudan-backend:local}
+    pull_policy: ${PULL_POLICY:-missing}
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      # Chỉ dùng khi STORAGE_TYPE=local; với S3 thì thư mục này để trống
+      - uploads:/data/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 90s
+      retries: 5
+
+  web:
+    image: ${WEB_IMAGE:-soudan-web:local}
+    pull_policy: ${PULL_POLICY:-missing}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-http://localhost}
+    ports:
+      - "${WEB_HTTP_PORT:-80}:80"
+      - "${WEB_HTTPS_PORT:-443}:443"
+    volumes:
+      # Giữ chứng chỉ HTTPS giữa các lần khởi động (tránh xin lại, Let's Encrypt giới hạn số lần)
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  uploads:
+  caddy_data:
+  caddy_config:

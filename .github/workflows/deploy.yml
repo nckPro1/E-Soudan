@@ -1,0 +1,137 @@
+# CD: sau khi CI xanh trên main (hoặc khi bấm chạy tay), build image, đẩy lên ECR rồi bảo máy chủ kéo bản mới.
+#
+# An toàn:
+#  - Không lưu khoá AWS trong GitHub: workflow đảm nhận IAM role qua OIDC (role chỉ tin nhánh main / environment production).
+#  - Job chạy trong environment "production": bật "Required reviewers" ở Settings > Environments > production để mỗi lần
+#    deploy phải có người duyệt.
+#  - Chỉ chạy khi đã đặt biến AWS_DEPLOY_ROLE_ARN (Settings > Secrets and variables > Actions > Variables), nên trước khi
+#    có hạ tầng AWS workflow này tự bỏ qua, không báo lỗi.
+#  - Chỉ nhận lần CI chạy từ sự kiện push lên main (không chạy mã của PR/fork).
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Để trống = deploy commit hiện tại. Điền mã commit (sha) đã có sẵn trên ECR để quay lại phiên bản cũ."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write # cần cho OIDC
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-southeast-1
+  PROJECT: soudan
+
+jobs:
+  deploy:
+    name: Build, đẩy ECR, deploy
+    if: >-
+      vars.AWS_DEPLOY_ROLE_ARN != '' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      ROLLBACK_TAG: ${{ inputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.ROLLBACK_TAG || env.SHA }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Đăng nhập ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build và đẩy image (bỏ qua khi quay lại phiên bản cũ)
+        if: env.ROLLBACK_TAG == ''
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          set -euo pipefail
+          docker build -t "$REGISTRY/$PROJECT/backend:$SHA" -t "$REGISTRY/$PROJECT/backend:prod" backend
+          docker build -f deploy/web.Dockerfile -t "$REGISTRY/$PROJECT/web:$SHA" -t "$REGISTRY/$PROJECT/web:prod" .
+          for name in backend web; do
+            docker push "$REGISTRY/$PROJECT/$name:$SHA"
+            docker push "$REGISTRY/$PROJECT/$name:prod"
+          done
+
+      - name: Quay lại phiên bản cũ (gắn lại thẻ prod)
+        if: env.ROLLBACK_TAG != ''
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          set -euo pipefail
+          for name in backend web; do
+            docker pull "$REGISTRY/$PROJECT/$name:$ROLLBACK_TAG"
+            docker tag "$REGISTRY/$PROJECT/$name:$ROLLBACK_TAG" "$REGISTRY/$PROJECT/$name:prod"
+            docker push "$REGISTRY/$PROJECT/$name:prod"
+          done
+
+      - name: Tìm máy chủ và kiểm tra đang chạy hay tắt
+        id: instance
+        run: |
+          set -euo pipefail
+          read -r ID STATE < <(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=$PROJECT-app" "Name=instance-state-name,Values=pending,running,stopping,stopped" \
+            --query 'Reservations[].Instances[].[InstanceId,State.Name]' --output text)
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+          echo "state=$STATE" >> "$GITHUB_OUTPUT"
+          echo "Máy chủ $ID đang ở trạng thái: $STATE"
+
+      # Máy tắt ngoài giờ không làm hỏng deploy: image thẻ "prod" đã nằm trên ECR, lần bật máy kế tiếp
+      # (soudan.service) tự kéo bản mới. Chỉ khi máy đang chạy mới cần bảo nó khởi động lại ngay.
+      - name: "Máy đang tắt: bản mới sẽ chạy ở lần bật kế tiếp"
+        if: steps.instance.outputs.state != 'running'
+        run: echo "Máy đang ${{ steps.instance.outputs.state }}; bản mới đã sẵn trên ECR và sẽ tự chạy khi máy bật theo lịch."
+
+      - name: "Máy đang chạy: kéo bản mới qua SSM (không mở SSH)"
+        if: steps.instance.outputs.state == 'running'
+        env:
+          INSTANCE_ID: ${{ steps.instance.outputs.id }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Làm mới file compose theo đúng commit đang deploy, rồi chạy lại start.sh (lấy cấu hình SSM, kéo image prod, up -d)
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy $SHA" \
+            --parameters "commands=[\"curl -fsSL https://raw.githubusercontent.com/$REPO/$SHA/deploy/docker-compose.yml -o /opt/soudan/docker-compose.yml\",\"/opt/soudan/start.sh\"]" \
+            --query 'Command.CommandId' --output text)
+          aws ssm wait command-executed --command-id "$CMD_ID" --instance-id "$INSTANCE_ID"
+          aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+            --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}' --output text | tail -n 30
+
+      - name: Kiểm tra sức khoẻ sau khi deploy
+        if: steps.instance.outputs.state == 'running' && vars.SITE_URL != ''
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            if curl -fsS "$SITE_URL/actuator/health" | grep -q '"status":"UP"'; then
+              echo "Hệ thống đã UP sau lần thử thứ $i"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Hệ thống chưa UP sau 5 phút; xem log trên máy chủ qua SSM." >&2
+          exit 1

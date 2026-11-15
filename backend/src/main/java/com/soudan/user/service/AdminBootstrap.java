@@ -9,11 +9,12 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Tạo Admin đầu tiên khi khởi động profile dev, nếu hệ thống chưa có Admin nào.
+ * Tạo Admin đầu tiên khi khởi động (profile dev và prod), nếu hệ thống chưa có Admin nào. Không có lớp này ở production thì
+ * không ai tạo được tài khoản. Chỉ chạy khi chưa có Admin nên khởi động lại không tạo thêm.
  * Email và mật khẩu tạm đến từ biến môi trường, không đặt cứng trong code; Admin phải đổi mật khẩu khi đăng nhập lần đầu.
  */
 @Component
-@Profile("dev")
+@Profile({ "dev", "prod" })
 public class AdminBootstrap implements ApplicationRunner {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminBootstrap.class);

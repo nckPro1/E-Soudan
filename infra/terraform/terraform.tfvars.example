@@ -1,0 +1,15 @@
+# Sao chép thành terraform.tfvars (KHÔNG commit) rồi điền giá trị thật.
+domain_name = "ten-mien-cua-ban.site"
+alert_email = "ban@example.com"
+admin_email = "ban@example.com"
+
+# Tên miền mua ngay trong Route 53 đã có sẵn zone: điền id zone. Để trống nếu muốn Terraform tạo zone mới.
+# hosted_zone_id = "Z0123456789ABCDEFGHIJ"
+
+# false: bạn tự thêm bản ghi A ở nhà đăng ký tên miền (cách này dùng khi mua ở Namecheap/Porkbun/Cloudflare)
+# manage_dns = false
+
+# Mọi ngày thay vì chỉ thứ Hai-thứ Sáu:
+# schedule_days = "*"
+# Tắt hẳn lịch bật/tắt (máy chạy liên tục):
+# schedule_enabled = false

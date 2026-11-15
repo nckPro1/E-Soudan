@@ -105,6 +105,7 @@
     "calendar": "カレンダー",
     "ai": "AI",
     "people": "メンバー",
+    "cicdTest": "CI/CDテスト",
     "language": "言語",
     "back": "戻る",
     "forward": "進む",
@@ -501,6 +502,10 @@
     "requestIncoming": "{name} さんがメッセージを希望しています。",
     "openChat": "チャットを開く",
     "requestDeclined": "{name} さんがリクエストを拒否しました。"
+  },
+  "cicdTest": {
+    "title": "CI/CDテスト",
+    "body": "このページはCI/CDの動作確認専用で、機能はありません。本番サイトで表示されれば、新しい版がデプロイされています。"
   },
   "calendar": {
     "today": "今日",

@@ -105,6 +105,7 @@
     "calendar": "Lịch",
     "ai": "Trợ lý AI",
     "people": "Nhân sự",
+    "cicdTest": "Thử CI/CD",
     "language": "Ngôn ngữ",
     "back": "Quay lại",
     "forward": "Tiến tới",
@@ -501,6 +502,10 @@
     "requestIncoming": "{name} muốn nhắn tin với bạn.",
     "openChat": "Mở cuộc trò chuyện",
     "requestDeclined": "{name} đã từ chối lời mời nhắn tin."
+  },
+  "cicdTest": {
+    "title": "Thử CI/CD",
+    "body": "Trang này chỉ để thử luồng CI/CD, không có tính năng nào. Nếu bạn thấy trang này trên web thật, bản mới đã được deploy."
   },
   "calendar": {
     "today": "Hôm nay",

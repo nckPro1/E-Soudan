@@ -40,6 +40,7 @@ const ICONS: Record<string, string> = {
   teams: 'M4 8h16v11H4zM9 8V6h6v2M4 13h16',
   calendar: 'M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2zM16 2v4M8 2v4M3 10h18',
   ai: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z',
+  cicd: 'M12 3v12m0 0l-4-4m4 4l4-4M5 21h14',
   people: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
 }
 
@@ -61,6 +62,7 @@ const items = computed<RailItem[]>(() =>
     { key: 'teams', route: 'teams', path: '/teams', label: t('nav.teams'), visible: true, soon: false },
     { key: 'calendar', route: 'calendar', path: '/calendar', label: t('nav.calendar'), visible: true, soon: false },
     { key: 'ai', route: 'ai', path: '/ai', label: t('nav.ai'), visible: !isAdmin.value, soon: false },
+    { key: 'cicd', route: 'cicd-test', path: '/cicd-test', label: t('nav.cicdTest'), visible: true, soon: false },
     { key: 'people', route: 'users', path: '/users', label: t('nav.people'), visible: can('USER_READ'), soon: false },
   ].filter((item) => item.visible),
 )
