@@ -85,6 +85,9 @@ data "aws_iam_policy_document" "github_assume" {
       values = [
         "repo:${var.github_repo}:ref:refs/heads/main",
         "repo:${var.github_repo}:environment:production",
+        # GitHub hiện gửi định danh repo kèm ID số (chống bị chiếm tên repo cũ), nên cho phép cả dạng này.
+        "repo:${var.github_repo_subject}:ref:refs/heads/main",
+        "repo:${var.github_repo_subject}:environment:production",
       ]
     }
   }
