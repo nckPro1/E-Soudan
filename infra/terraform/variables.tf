@@ -31,6 +31,12 @@ variable "github_repo" {
   default     = "nckPro1/E-Soudan"
 }
 
+variable "github_repo_subject" {
+  description = "Dạng định danh repo trong token OIDC mới của GitHub (kèm ID số): chủ-sở-hữu@id/tên-repo@id. Lấy từ claim sub của một lần chạy workflow."
+  type        = string
+  default     = "nckPro1@100603364/E-Soudan@1454120513"
+}
+
 variable "instance_type" {
   description = "Loại máy EC2. t3.small (2 GB RAM) đủ cho backend + web."
   type        = string

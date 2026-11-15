@@ -51,12 +51,6 @@ jobs:
         with:
           ref: ${{ env.ROLLBACK_TAG || env.SHA }}
 
-      # TẠM THỜI để chẩn đoán lỗi OIDC: in claim "sub" (không phải bí mật) mà GitHub gửi cho AWS.
-      - name: Debug OIDC sub
-        run: |
-          TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | python3 -c "import sys,json;print(json.load(sys.stdin)['value'])")
-          echo "$TOKEN" | cut -d. -f2 | python3 -c "import sys,base64,json;s=sys.stdin.read().strip();s+='='*(-len(s)%4);d=json.loads(base64.urlsafe_b64decode(s));print('sub =',d['sub']);print('aud =',d['aud']);print('repository =',d['repository']);print('environment =',d.get('environment'))"
-
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
