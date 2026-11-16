@@ -10,9 +10,11 @@ import { notificationRoutes } from '../features/notification/routes'
 import { calendarRoutes } from '../features/calendar/routes'
 import { aiRoutes } from '../features/ai/routes'
 import { cicdTestRoutes } from '../features/cicdtest/routes'
+import { meetingRoutes } from '../features/meeting/routes'
 
 const routes: RouteRecordRaw[] = [
   ...authRoutes,
+  ...meetingRoutes,
   {
     // Mọi trang sau đăng nhập nằm trong khung bố cục chung
     path: '/',

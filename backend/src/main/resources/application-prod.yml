@@ -55,6 +55,11 @@ app:
     enabled: ${OPERATING_HOURS_ENABLED:false}
     start: ${OPERATING_HOURS_START:08:30}
     end: ${OPERATING_HOURS_END:18:00}
+  # Họp video qua JaaS (8x8). Để trống thì tính năng tắt. JAAS_PRIVATE_KEY là PEM PKCS#8 đã base64 hoá (một dòng).
+  meeting:
+    app-id: ${JAAS_APP_ID:}
+    key-id: ${JAAS_KEY_ID:}
+    private-key: ${JAAS_PRIVATE_KEY:}
   reminders:
     task-cron: ${REMINDER_TASK_CRON:0 0 8 * * *}
     report-cron: ${REMINDER_REPORT_CRON:0 30 16 * * MON-FRI}

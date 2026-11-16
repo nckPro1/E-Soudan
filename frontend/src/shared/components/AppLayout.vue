@@ -4,6 +4,7 @@ import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import NavRail from './NavRail.vue'
 import UserMenu from './UserMenu.vue'
+import NewMeetingButton from '../../features/meeting/components/NewMeetingButton.vue'
 import { useAuthStore } from '../../features/auth/store'
 import { useChatStore } from '../../features/chat/store'
 import ProfileCardHost from '../../features/people/ProfileCardHost.vue'
@@ -144,6 +145,7 @@ async function signOut() {
 
       <!-- Right side: tài khoản -->
       <div class="flex items-center justify-end space-x-3 w-1/4">
+        <NewMeetingButton />
         <UserMenu @sign-out="signOut" />
       </div>
     </header>

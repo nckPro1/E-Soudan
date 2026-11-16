@@ -503,6 +503,23 @@
     "openChat": "Open chat",
     "requestDeclined": "{name} declined your message request."
   },
+  "meeting": {
+    "new": "New meeting",
+    "title": "Meeting",
+    "notConfigured": "Video meetings are not configured on this system",
+    "rateLimited": "Too many requests, please try again in a few minutes",
+    "invalidRoom": "This meeting link is not valid",
+    "failed": "Could not open the meeting, please try again",
+    "loading": "Opening the meeting...",
+    "joinTitle": "Join the meeting",
+    "joinHint": "After joining you will wait in the lobby until the host lets you in.",
+    "yourName": "Your name",
+    "join": "Ask to join",
+    "joining": "Joining...",
+    "copyLink": "Copy invite link",
+    "copied": "Copied",
+    "leave": "Leave"
+  },
   "cicdTest": {
     "title": "CI/CD test",
     "body": "This page only exists to test the CI/CD pipeline and has no feature. If you can see it on the live site, the new version was deployed."

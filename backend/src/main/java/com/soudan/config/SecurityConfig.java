@@ -37,6 +37,8 @@ public class SecurityConfig {
 						.requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
 						// Thông tin tài khoản demo cho trang đăng nhập (chỉ có nội dung khi app.demo.enabled=true)
 						.requestMatchers("/api/v1/demo/account", "/api/v1/public/info").permitAll()
+						// Khách vào cuộc họp bằng link (không có tài khoản): chỉ lấy token khách, chủ trì vẫn phải duyệt ở phòng chờ
+						.requestMatchers("/api/v1/public/meetings/**").permitAll()
 						// Bắt tay WebSocket không mang được header Authorization; token được kiểm tra ở khung STOMP CONNECT
 						.requestMatchers("/ws/**").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
