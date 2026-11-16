@@ -10,6 +10,8 @@ export function installGuards(router: Router): void {
     const auth = useAuthStore()
     await auth.restore()
 
+    if (to.meta.public) return true
+
     if (to.meta.guestOnly) {
       return auth.isAuthenticated ? { name: 'home' } : true
     }

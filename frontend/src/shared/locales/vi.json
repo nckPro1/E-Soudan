@@ -503,6 +503,23 @@
     "openChat": "Mở cuộc trò chuyện",
     "requestDeclined": "{name} đã từ chối lời mời nhắn tin."
   },
+  "meeting": {
+    "new": "Cuộc họp mới",
+    "title": "Cuộc họp",
+    "notConfigured": "Họp video chưa được cấu hình trên hệ thống",
+    "rateLimited": "Quá nhiều yêu cầu, hãy thử lại sau ít phút",
+    "invalidRoom": "Link cuộc họp không hợp lệ",
+    "failed": "Không mở được cuộc họp, hãy thử lại",
+    "loading": "Đang mở cuộc họp...",
+    "joinTitle": "Tham gia cuộc họp",
+    "joinHint": "Sau khi vào, bạn sẽ chờ trong phòng chờ cho đến khi chủ trì cho phép.",
+    "yourName": "Tên của bạn",
+    "join": "Xin vào họp",
+    "joining": "Đang vào...",
+    "copyLink": "Sao chép link mời",
+    "copied": "Đã sao chép",
+    "leave": "Rời họp"
+  },
   "cicdTest": {
     "title": "Thử CI/CD",
     "body": "Trang này chỉ để thử luồng CI/CD, không có tính năng nào. Nếu bạn thấy trang này trên web thật, bản mới đã được deploy."

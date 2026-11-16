@@ -48,7 +48,8 @@ locals {
   }
 
   # Bí mật bạn tự đặt (mật khẩu ứng dụng Gmail, khoá Claude, mật khẩu Admin tạm): để chỗ giữ chỗ, Terraform không ghi đè
-  manual_secrets = ["ADMIN_TEMP_PASSWORD", "MAIL_USERNAME", "MAIL_PASSWORD", "ANTHROPIC_API_KEY"]
+  # JAAS_*: họp video qua JaaS (8x8); để giá trị giữ chỗ thì tính năng tắt. JAAS_PRIVATE_KEY là nội dung khoá PKCS#8 mã base64 (một dòng).
+  manual_secrets = ["ADMIN_TEMP_PASSWORD", "MAIL_USERNAME", "MAIL_PASSWORD", "ANTHROPIC_API_KEY", "JAAS_APP_ID", "JAAS_KEY_ID", "JAAS_PRIVATE_KEY"]
 }
 
 resource "aws_ssm_parameter" "plain" {
